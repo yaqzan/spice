@@ -1,58 +1,47 @@
 # Spice
 
-Ask it what you're cooking. It answers with a picture of your actual spice rack, the
-right jars lit up and numbered in the order they go in the pan.
+![The rack view, jars lit up for a recipe](docs/screenshot.webp)
+
+What do I need for pork belly, and where is it on the rack. That's the only question
+Spice answers, and it answers it by drawing my actual shelf.
 
 Live: https://spice.yaqzan.dev
 
-## Why I built it
+I own too many spices to hold the shelf in my head, and every recipe app assumes a rack
+that isn't mine. Ask a generic chat window for a recipe and you get a list of names;
+you're still the one translating "smoked paprika" into "second shelf, third jar, next
+to the cumin." Spice keeps one registry of every jar I own, its aliases, and its shelf
+position, and every recipe it writes gets checked against that registry before it's
+allowed on screen. The picture you see is generated from the same layout data the app
+uses to place the jar.
 
-I own too many spices to hold the shelf in my head, and every recipe app assumes a spice
-rack that isn't mine. I wanted something that points at the specific jar, remembers
-whether the last dish came out too salty, and gets the actual conversion right between
-the salt I own and the salt a recipe writer probably meant. A generic chat window can
-write a recipe. It can't render my shelf or remember what I told it about my food.
+Salt is the one place a recipe app can quietly be wrong. Diamond Crystal and Morton
+kosher salt differ by 71% per teaspoon by volume, so a recipe that says "a spoon" is
+really only correct for one specific salt brand. Spice stores salt in grams, a
+brand-independent unit, and only converts to spoons at the moment it renders a card, for
+whichever brand I've told it I actually keep on the counter. Getting this wrong once
+cost a dish that scored 2 out of 10.
 
-## How it works
+The recipe card groups spices into numbered bowls in the order they go in the pan. That ordering comes from one tuple in the rack registry, so
+the bowl numbers on the card and the physical premix order in the kitchen can never
+drift apart. A rating I leave after cooking, plus whether the salt or heat landed,
+feeds straight back into the system prompt for the next recipe, and the prompt itself is
+rebuilt from live database state on every single request. The predecessor project this
+replaced kept its system prompt as static text, and it froze, never updating as I
+changed my mind about the rack.
 
-- `rack.py` is the only place a spice name, alias, or handling rule is defined. There is
-  no second spice list in the frontend to drift out of sync.
-- `prompt.py` rebuilds the system prompt fresh from live database state on every
-  request, so it can never carry stale "memory" text forward.
-- A request goes rack registry to prompt to OpenRouter to `schema.normalise()` to
-  SQLite to the API to an SVG rack render plus a recipe card.
-- Recipes store salt in grams, a brand-independent unit, and convert to spoons of your
-  configured salt brand only at render time (`schema.spoonify`). Diamond Crystal and
-  Morton differ by 71% per teaspoon, and showing both units on a card just asks you to
-  pick one with a pan already hot.
-- Rate a dish and separately say whether the salt and heat landed. The averages feed
-  straight back into future prompts.
-- Access control is by TCP peer, not a password. On the tailnet the app knows who you
-  are from the connection itself; off the tailnet it's a read-only public exhibit.
+There's no login screen. The app decides who I am from the raw TCP connection, not a
+header, so a public tunnel sitting in front of it can't be tricked into impersonating me
+by forging `X-Forwarded-For`. Off the tailnet, the site is a read-only public exhibit;
+on it, it's mine.
 
 `.claude/` holds the guidance I give Claude Code when it works in this repo. I develop
 with agents heavily, and the docs there are the project's memory.
 
-## What I think is interesting
-
-- Access control trusts only the raw socket's remote address, and explicitly refuses to
-  trust `X-Forwarded-For`, which the same box's public tunnel would let anyone forge.
-- Salt-unit correctness is a first-class design constraint, not a formatting detail. A
-  71% volume difference between salt brands caused the one dish that scored 2/10.
-- `rack.STAGES` ordering is load-bearing. The tuple order drives the premix-bowl
-  numbering, so the recipe card's bowl order always matches the physical order things go
-  in the pan.
-- Every jar is guaranteed placed exactly once on boot, and layout writes are
-  all-or-nothing, so a half-applied layout can never point the rendered picture at the
-  wrong shelf.
-- The prompt is rebuilt from the database on every call instead of maintained as text.
-  The predecessor I replaced kept its system prompt as static text and it froze, never
-  updating as I changed my mind about the rack.
-
 ## Running it
 
-This is a personal self-hosted tool that assumes my specific spice rack, my Tailscale
-network, and my Windows machine. Here's what you'd need to run it yourself:
+This assumes my specific spice rack, my Tailscale network, and a Windows machine. Here's
+what actually matters if you wanted to run it yourself:
 
 ```powershell
 python -m spice serve            # API + built SPA on :5003
