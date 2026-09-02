@@ -1,0 +1,673 @@
+/* Spice — mobile only, one hand, often with something already in the pan.
+ *
+ * Dark on purpose: 56 jars of paprika-red, turmeric-yellow and chile-crimson
+ * only read as spices against something near-black. On a bright kitchen counter
+ * a light theme would wash the colour coding out entirely, and the colour coding
+ * is how you find the jar.
+ */
+
+:root {
+  --bg: #16130f;
+  --surface: #1f1b16;
+  --surface-2: #2a251e;
+  --line: #3a3229;
+  --text: #f0e9df;
+  --muted: #a1958a;
+  --accent: #e08a2b;
+  --accent-dim: #7a4a14;
+  --hot: #d94a2b;
+  --good: #6f9e4a;
+  --warn: #d9a13a;
+  --radius: 14px;
+  --tabs-h: 58px;
+}
+
+* { box-sizing: border-box; }
+
+html, body, #root { height: 100%; }
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--text);
+  font: 16px/1.5 -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  overscroll-behavior-y: none;
+}
+
+.app { display: flex; flex-direction: column; min-height: 100%; }
+
+main {
+  flex: 1;
+  padding-bottom: calc(var(--tabs-h) + env(safe-area-inset-bottom) + 16px);
+}
+
+.page { padding: 20px 16px 8px; max-width: 640px; margin: 0 auto; }
+
+h1 { font-size: 26px; margin: 4px 0 14px; letter-spacing: -0.02em; }
+h2 { font-size: 23px; margin: 0 0 8px; letter-spacing: -0.02em; }
+h3 { font-size: 15px; margin: 0 0 10px; text-transform: uppercase;
+     letter-spacing: 0.08em; color: var(--muted); font-weight: 600; }
+h4 { font-size: 16px; margin: 0; }
+p { margin: 0 0 10px; }
+
+.muted { color: var(--muted); }
+.small { font-size: 13px; }
+.centred { text-align: center; }
+.hint { font-size: 12px; color: var(--muted); margin-top: 8px; }
+.error { color: var(--hot); background: rgba(217, 74, 43, 0.1);
+         padding: 10px 12px; border-radius: var(--radius); }
+
+/* ── tab bar ─────────────────────────────────────────────────────────────── */
+
+.tabs {
+  position: fixed; bottom: 0; left: 0; right: 0;
+  display: grid; grid-template-columns: repeat(4, 1fr);
+  background: rgba(22, 19, 15, 0.94);
+  backdrop-filter: blur(12px);
+  border-top: 1px solid var(--line);
+  padding-bottom: env(safe-area-inset-bottom);
+  z-index: 20;
+}
+
+.tabs a {
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  gap: 2px; height: var(--tabs-h);
+  color: var(--muted); text-decoration: none; font-size: 11px;
+}
+.tabs a span { font-size: 20px; line-height: 1; }
+.tabs a.on { color: var(--accent); }
+
+/* ── buttons & inputs ────────────────────────────────────────────────────── */
+
+button {
+  font: inherit; color: var(--text); background: var(--surface-2);
+  border: 1px solid var(--line); border-radius: 10px;
+  padding: 10px 14px; cursor: pointer; -webkit-tap-highlight-color: transparent;
+}
+button:disabled { opacity: 0.45; }
+button.primary { background: var(--accent); border-color: var(--accent);
+                 color: #1a1208; font-weight: 600; }
+button.big { width: 100%; padding: 15px; font-size: 17px; }
+button.link { background: none; border: none; color: var(--accent);
+              padding: 6px 0; text-align: left; }
+
+input, textarea, select {
+  font: inherit; width: 100%; color: var(--text);
+  background: var(--surface); border: 1px solid var(--line);
+  border-radius: 10px; padding: 12px 14px;
+}
+input[type='range'] { padding: 0; accent-color: var(--accent); background: none;
+                      border: none; }
+textarea { resize: vertical; }
+
+.field { display: block; margin-bottom: 16px; }
+.field > span { display: block; font-size: 13px; color: var(--muted);
+                margin-bottom: 6px; }
+
+.segmented { border: none; padding: 0; margin: 0 0 16px; display: flex;
+             flex-wrap: wrap; gap: 6px; }
+.segmented legend { font-size: 13px; color: var(--muted); padding: 0 0 6px; }
+.segmented button { flex: 1; min-width: 68px; font-size: 13px; padding: 10px 8px; }
+.segmented button.on { background: var(--accent-dim); border-color: var(--accent);
+                       color: var(--text); }
+.segmented button em { display: block; font-size: 11px; color: var(--muted);
+                       font-style: normal; }
+.segmented.stacked { flex-direction: column; }
+.segmented.stacked button { text-align: left; }
+.segmented.inline { margin-bottom: 12px; }
+
+/* ── ask ─────────────────────────────────────────────────────────────────── */
+
+.ask-input { font-size: 18px; padding: 16px; margin-bottom: 14px; }
+.ask-extra { margin-bottom: 14px; }
+
+.portion { display: flex; align-items: center; gap: 12px; margin-bottom: 14px; }
+.portion span { color: var(--muted); font-size: 13px; flex: 1; }
+.portion button { width: 44px; height: 44px; padding: 0; font-size: 20px; }
+.portion b { min-width: 68px; text-align: center; }
+
+.quick { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 22px; }
+.quick button { font-size: 13px; padding: 9px 13px; border-radius: 999px; }
+
+/* ── the rack ────────────────────────────────────────────────────────────── */
+
+.rack-stack { display: flex; flex-direction: column; gap: 18px; margin: 4px 0 12px; }
+.rack { margin: 0; }
+.rack-label { font-size: 11px; text-transform: uppercase; letter-spacing: 0.1em;
+              color: var(--muted); margin-bottom: 4px; }
+.rack-svg { width: 100%; height: auto; display: block; }
+
+.rack-shelf-top { fill: #5d4a35; }
+.rack-shelf-face { fill: #322718; }
+.rack-row-number { fill: var(--muted); font-size: 11px; font-weight: 700; opacity: 0.6; }
+
+.jar-shadow { fill: #000; opacity: 0.3; }
+/* Every jar keeps a hairline edge. Without it the near-black contents — nigella,
+   black mustard, black fungus, zanzibar pepper, black cardamom — disappear into
+   the background and read as empty slots rather than as jars. */
+.jar-glass { stroke: rgba(255, 255, 255, 0.15); stroke-width: 0.75; }
+/* Caps are one uniform near-black plastic, not a darkened jar colour. A rack of
+   matching caps is what makes 56 jars read as one set; the identity lives in
+   the glass between cap and label. */
+.jar-cap-base { fill: #2b241c; stroke: rgba(255, 255, 255, 0.1); stroke-width: 0.75; }
+.jar-cap-shine { fill: #fff; opacity: 0.13; }
+.jar-headspace { fill: #0c0906; opacity: 0.32; }
+
+.jar { cursor: pointer; }
+/* Cream paper, dark ink, a whisper of an edge so it survives the pale jars
+   (salt, MSG, white pepper) without turning into a bordered sticker on the
+   dark ones. */
+.jar-label-bg { fill: #efe6d6; stroke: rgba(20, 12, 4, 0.3); stroke-width: 0.5; }
+.jar-code text { fill: #241a10; font-size: 6.4px; font-weight: 700; }
+.jar-dim .jar-visual { opacity: 0.22; }
+.jar-dim .jar-code { opacity: 0.35; }
+.jar-ring { fill: none; stroke: var(--accent); stroke-width: 2; }
+.jar-selected { fill: none; stroke: #fff; stroke-width: 1.5; opacity: 0.7; }
+.jar-badge-bg { fill: var(--accent); }
+.jar-badge { fill: #1a1208; font-size: 11px; font-weight: 800; }
+.jar-name { fill: var(--text); font-size: 8.5px; font-weight: 600; }
+.jar-amount { fill: var(--accent); font-size: 8.5px; font-weight: 700; }
+.jar-out { stroke: var(--hot); stroke-width: 2.5; stroke-linecap: round; }
+.jar-low { fill: var(--warn); stroke: rgba(0, 0, 0, 0.5); stroke-width: 0.75; }
+
+.jar-tip { font-size: 13px; color: var(--muted); background: var(--surface);
+           padding: 10px 12px; border-radius: var(--radius); }
+
+/* ── recipe ──────────────────────────────────────────────────────────────── */
+
+.recipe-head { margin-bottom: 18px; }
+.recipe-chips { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 8px; }
+
+.chip { font-size: 11px; padding: 4px 9px; border-radius: 999px;
+        background: var(--surface-2); color: var(--muted);
+        border: 1px solid var(--line); display: inline-flex; align-items: center; }
+.chip-cuisine { color: var(--accent); border-color: var(--accent-dim); }
+.chip-warn { color: var(--warn); border-color: var(--warn); }
+.chip-calm { color: var(--good); border-color: #3f5a2c; }
+.chip-heat { color: var(--hot); border-color: #6b2a1a; }
+
+.heat-dots { display: inline-flex; gap: 3px; }
+.heat-dots i { width: 6px; height: 6px; border-radius: 50%;
+               background: var(--line); display: block; }
+.heat-dots i.on { background: var(--hot); }
+
+.times { font-size: 13px; color: var(--muted); }
+.why { font-size: 15px; color: var(--text); opacity: 0.9; font-style: italic;
+       border-left: 2px solid var(--accent-dim); padding-left: 12px; }
+
+.warnings { list-style: none; padding: 12px 14px; margin: 0 0 16px;
+            background: rgba(217, 161, 58, 0.12); border-radius: var(--radius);
+            font-size: 13px; color: var(--warn); }
+.warnings li + li { margin-top: 6px; }
+
+.panel { background: var(--surface); border-radius: var(--radius);
+         padding: 16px; margin-bottom: 14px; }
+.panel > h3 span { text-transform: none; letter-spacing: 0; }
+
+/* Salt gets the biggest type on the page. Both of this kitchen's recorded
+ * failures were salt errors, not flavour errors. */
+.salt-panel { border: 1px solid var(--accent-dim); }
+.salt-big { font-size: 26px; font-weight: 700; color: var(--accent);
+            margin-bottom: 2px; letter-spacing: -0.02em; }
+.salt-msg { font-size: 16px; color: var(--text); margin-bottom: 6px; }
+.salt-when { font-size: 14px; margin-bottom: 6px; }
+.salt-why { font-size: 13px; color: var(--muted); margin: 0; }
+
+.blend { list-style: none; padding: 0; margin: 0; }
+.blend-row { display: grid; grid-template-columns: 14px 1fr auto;
+             gap: 10px; align-items: center; padding: 11px 0;
+             border-bottom: 1px solid var(--line); cursor: pointer; }
+.blend-row:last-child { border-bottom: none; }
+.blend-swatch { width: 14px; height: 14px; border-radius: 4px; display: inline-block;
+                flex: none; }
+.blend-main { display: flex; flex-direction: column; min-width: 0; }
+.blend-main em { font-size: 11.5px; color: var(--muted); font-style: normal; }
+.blend-amount { font-variant-numeric: tabular-nums; font-weight: 600;
+                color: var(--accent); font-size: 14px; }
+.blend-detail { grid-column: 2 / -1; font-size: 12.5px; color: var(--muted);
+                display: flex; flex-direction: column; gap: 5px; padding-top: 6px; }
+.blend-why { color: var(--text); opacity: 0.85; }
+.blend-warn { color: var(--hot); }
+.blend-out { opacity: 0.55; }
+
+.kitchen { list-style: none; padding: 0; margin: 0; }
+.kitchen li { display: flex; justify-content: space-between; gap: 12px;
+              padding: 9px 0; border-bottom: 1px solid var(--line); font-size: 14px; }
+.kitchen li:last-child { border-bottom: none; }
+/* Direct child only. The amount is wrapped in <b>, and inside it the TBsp chip
+   is another <b> — a descendant selector repainted the chip's text in the accent
+   orange, on the warn-yellow chip, which is two shades of the same hue and read
+   as a blank rectangle exactly where the unit was. */
+.kitchen li > b { color: var(--accent); font-weight: 600; }
+.kitchen .off-rack span::after { content: ' — not on the rack';
+                                 color: var(--warn); font-size: 11px; }
+
+.pan { font-size: 13px; color: var(--muted); margin-bottom: 14px; }
+
+.steps { list-style: none; padding: 0; margin: 0; counter-reset: step; }
+.step { padding: 0 0 18px; margin-bottom: 18px; border-bottom: 1px solid var(--line); }
+.step:last-child { border-bottom: none; margin-bottom: 0; padding-bottom: 0; }
+.step-head { display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
+             margin-bottom: 8px; }
+.step-n { width: 24px; height: 24px; border-radius: 50%; flex: none;
+          background: var(--accent-dim); color: var(--text); font-size: 12px;
+          font-weight: 700; display: grid; place-items: center; }
+.step-head h4 { flex: 1; min-width: 0; }
+.step-meta { display: flex; gap: 5px; flex-wrap: wrap; }
+.step-body { font-size: 15px; margin-bottom: 8px; }
+
+/* ── the stamp ───────────────────────────────────────────────────────────────
+ * An ingredient inside the sentence, carrying its own measurement and its own
+ * jar colour. It used to sit in a separate list under the step, which meant
+ * reading the instruction, then looking away to find out how much — twice per
+ * step, with something already in the pan. Now the sentence answers itself.
+ *
+ * Deliberately a chip and not just bold text: the dot, the name and the number
+ * have to hold together as one object when the eye skims, or the amount reads
+ * as belonging to the next clause.
+ */
+.stamp { display: inline-flex; align-items: baseline; gap: 5px;
+         background: var(--surface-2); border: 1px solid var(--line);
+         border-radius: 7px; padding: 1px 6px; margin: 0 1px;
+         line-height: 1.35; white-space: nowrap; }
+.stamp i { width: 8px; height: 8px; border-radius: 2px; flex: none;
+           align-self: center; }
+/* A dot means "this is a jar, and this is its colour" — the same swatch it
+   wears on the rack and in its bowl. Nothing from the fridge has one, so a
+   kitchen stamp carries no dot at all rather than an empty ring, which read as
+   a colour that had failed to arrive. It leans on the chip instead. */
+.stamp-kitchen { border-style: dashed; }
+/* An amount with no ingredient beside it — "3/4 TEAsp of the measured salt".
+   Same chip, so every number in a step is found the same way, whether or not a
+   name happened to be sitting next to it. */
+.stamp-measure { padding: 1px 5px; }
+.stamp-name { font-weight: 600; }
+.stamp-amount { color: var(--accent); font-weight: 700;
+                font-variant-numeric: tabular-nums; }
+/* A stamp is one object; a long ingredient name must not tear it in half, but a
+   whole sentence of unbreakable chips would overflow the phone. So the name may
+   wrap inside the stamp while the amount stays welded to it. */
+@media (max-width: 420px) {
+  .stamp { white-space: normal; }
+}
+
+/* Durations, set in bold. Paired with the stamps, the eye can pick "what goes
+   in" and "for how long" out of a step without reading the connective tissue —
+   which is all anyone does with a recipe once the pan is hot. */
+.step-time { font-weight: 700; color: var(--text); }
+
+/* A bowl named in the sentence, matching the reminder underneath. */
+.step-bowl-ref { font-weight: 700; color: var(--accent); letter-spacing: 0.02em; }
+/* Named but not on this step's reminder list — the model invented a number.
+   Muted rather than hidden: it is still what the sentence says. */
+.step-bowl-loose { color: var(--muted); }
+
+/* ── the bowl reminder ───────────────────────────────────────────────────────
+ * What is in the bowls this step reaches for. Names and colours only: the
+ * amounts were measured out before the stove was lit, and printing them again
+ * beside the pan is an invitation to pour twice. Because it carries no numbers
+ * it stays one line per bowl, so a step that uses three bowls does not push the
+ * next step off the screen.
+ */
+.step-bowls { list-style: none; padding: 8px 10px; margin: 0 0 8px;
+              background: var(--surface-2); border-radius: 10px;
+              display: flex; flex-direction: column; gap: 6px; font-size: 12.5px; }
+.step-bowls > li { display: flex; align-items: flex-start; gap: 8px; }
+.step-bowls .bowl-n { width: 18px; height: 18px; font-size: 11px; margin-top: 1px; }
+.step-bowl-items { display: flex; flex-wrap: wrap; gap: 4px 10px; min-width: 0; }
+.step-bowl-item { display: inline-flex; align-items: center; gap: 5px; }
+.step-bowl-item i { width: 8px; height: 8px; border-radius: 2px; flex: none; }
+
+.step-watch { font-size: 13px; color: var(--muted); margin: 0; }
+.step-watch span { color: var(--warn); font-weight: 600; text-transform: uppercase;
+                   font-size: 10px; letter-spacing: 0.08em; margin-right: 6px; }
+
+.rate-cta { width: 100%; padding: 15px; margin-top: 6px; }
+.rated-note { text-align: center; font-size: 13px; color: var(--muted);
+              margin-top: 12px; }
+
+/* ── sheets ──────────────────────────────────────────────────────────────── */
+
+.sheet-backdrop { position: fixed; inset: 0; background: rgba(0, 0, 0, 0.6);
+                  display: flex; align-items: flex-end; z-index: 40; }
+.sheet { background: var(--surface); width: 100%; border-radius: 20px 20px 0 0;
+         padding: 10px 18px calc(20px + env(safe-area-inset-bottom));
+         max-height: 88vh; overflow-y: auto; }
+.sheet-grip { width: 38px; height: 4px; border-radius: 2px; background: var(--line);
+              margin: 0 auto 14px; }
+.sheet h3 { color: var(--text); font-size: 18px; text-transform: none;
+            letter-spacing: -0.01em; display: flex; align-items: center; gap: 8px; }
+.sheet-actions { display: flex; gap: 10px; margin-top: 8px; }
+.sheet-actions button { flex: 1; padding: 14px; }
+
+/* ── history ─────────────────────────────────────────────────────────────── */
+
+.history { list-style: none; padding: 0; margin: 0; }
+.history li { border-bottom: 1px solid var(--line); }
+.history a { display: flex; align-items: center; gap: 12px; padding: 14px 0;
+             color: inherit; text-decoration: none; }
+.history-main { flex: 1; display: flex; flex-direction: column; min-width: 0; }
+.history-main em { font-size: 12px; color: var(--muted); font-style: normal; }
+.history-side { text-align: right; display: flex; flex-direction: column;
+                align-items: flex-end; }
+.history-side em { font-size: 11px; color: var(--muted); font-style: normal; }
+
+.score { font-size: 19px; font-weight: 700; }
+.score.unrated { color: var(--line); }
+.score.s1, .score.s2 { color: var(--hot); }
+.score.s3 { color: var(--warn); }
+.score.s4, .score.s5 { color: var(--good); }
+
+/* ── re-shelve ───────────────────────────────────────────────────────────── */
+
+.moves { list-style: none; padding: 0; margin: 0 0 14px; }
+.moves li { display: grid; grid-template-columns: 1fr auto; gap: 2px 10px;
+            padding: 9px 0; border-bottom: 1px solid var(--line); font-size: 13px; }
+.moves li:last-child { border-bottom: none; }
+.moves li span { grid-column: 1; color: var(--muted); font-size: 12px; }
+.moves li b { grid-column: 1; grid-row: 1; }
+.moves li em { grid-column: 2; grid-row: 1 / span 2; align-self: center;
+               color: var(--accent); font-style: normal; font-size: 12px; }
+
+.status { list-style: none; padding: 0; margin: 0; }
+.status li { display: flex; justify-content: space-between; padding: 8px 0;
+             border-bottom: 1px solid var(--line); font-size: 14px; }
+.status li:last-child { border-bottom: none; }
+.status li span { color: var(--muted); }
+
+/* ── the public face ─────────────────────────────────────────────────────────
+ * A visitor off the tailnet is a portfolio audience, not a locked-out user: they
+ * get the rack and a worked example. There is nothing to unlock, so there is
+ * nothing here to explain -- the hero is a title and four words.
+ */
+
+.demo-hero { margin-bottom: 18px; }
+.demo-hero h1 { font-size: 34px; margin-bottom: 4px; }
+
+/* ── the rack as words ───────────────────────────────────────────────────────
+ * For the job the picture is bad at: standing in front of fifty-six jars,
+ * sorting them. Full names, position numbers, nothing abbreviated.
+ */
+
+.rack-list-rack { margin-bottom: 22px; }
+.rack-list-rack > h3 { color: var(--accent); font-size: 13px; }
+.rack-list-row { margin-bottom: 14px; }
+.rack-list-row h4 { font-size: 12px; text-transform: uppercase; letter-spacing: 0.08em;
+                    color: var(--muted); font-weight: 600; margin-bottom: 6px; }
+.rack-list-row h4 em { font-style: normal; opacity: 0.7; }
+.rack-list-row ol { list-style: none; padding: 0; margin: 0;
+                    background: var(--surface); border-radius: var(--radius);
+                    overflow: hidden; }
+.rack-list-row li { display: flex; align-items: center; gap: 10px;
+                    padding: 11px 12px; border-bottom: 1px solid var(--line);
+                    font-size: 15px; }
+.rack-list-row li:last-child { border-bottom: none; }
+.rack-list-row .pos { width: 20px; flex: none; text-align: center;
+                      font-size: 12px; font-weight: 700; color: var(--muted); }
+.rack-list-row li i { width: 15px; height: 15px; border-radius: 4px; flex: none; }
+.rack-list-row .nm { flex: 1; }
+.rack-list-row li b { font-size: 10px; text-transform: uppercase;
+                      letter-spacing: 0.06em; }
+.rack-list-row .stock-out { color: var(--hot); }
+.rack-list-row .stock-low { color: var(--warn); }
+
+/* ── wide screens ────────────────────────────────────────────────────────────
+ * The phone layout is the important one — this app gets used at a stove. But on
+ * a desktop the single narrow column wastes the one thing a big screen is good
+ * for: showing the racks the way they actually hang, side by side, instead of
+ * making you scroll from one to the other.
+ *
+ * Breakpoint duplicated in useIsWide.ts. One number, written down twice.
+ */
+
+@media (min-width: 900px) {
+  .page { max-width: 1120px; padding: 28px 24px 8px; }
+
+  /* Left rack, right rack, stove shelf — in that order on the wall, so in that
+     order on screen.
+     *
+     * Both templates and every cell come from FullRack in SpiceRack.tsx as
+     * inline styles, computed from the SVG viewBox widths. Nothing about the
+     * arrangement is written down here, on purpose:
+     *
+     * - The ratios are viewBox widths, NOT jar counts. Padding and inter-jar
+     *   gaps do not scale with the number of jars, so a hand-written 7:7:5 drew
+     *   the stove jars ~4% small — enough to imply, falsely, different
+     *   containers. Getting it right by hand means recomputing it every time a
+     *   shelf gains a jar, which is the kind of arithmetic nobody redoes.
+     * - Placement used to be four nth-child rules. They assumed a fixed number
+     *   of racks in a fixed order, so a shelf emptying out renumbered the rest
+     *   and moved them into the wrong cells.
+     *
+     * Columns are sized in proportion to their own widest shelf, so each SVG
+     * fills its column exactly. Equal columns plus a per-shelf cap — the
+     * previous arrangement — left a quarter of the third column empty, since the
+     * stove is five jars wide in a column sized for seven. */
+  .rack-stack {
+    display: grid;
+    align-items: start;
+    gap: 14px 22px;
+  }
+
+
+  /* The recipe becomes two columns, with the rack spanning both because it is
+     inherently wide. `dense` lets a short panel backfill a gap rather than
+     leaving a hole. */
+  .recipe {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    grid-auto-flow: dense;
+    gap: 0 16px;
+    align-items: start;
+  }
+  .recipe-head, .warnings, .panel-rack, .rate-cta { grid-column: 1 / -1; }
+
+  /* A fixed bar spanning a 1600px window looks like a mistake. Float it as a
+     pill over the content instead. */
+  .tabs {
+    left: 50%; right: auto; transform: translateX(-50%);
+    bottom: 18px; width: 420px; border-radius: 999px;
+    border: 1px solid var(--line);
+    box-shadow: 0 8px 28px rgba(0, 0, 0, 0.45);
+  }
+  main { padding-bottom: calc(var(--tabs-h) + 40px); }
+
+  /* Long prose is unreadable at full width even on a wide screen. */
+  .demo-hero p, .lede { max-width: 62ch; }
+
+  .rack-list { display: grid; grid-template-columns: 1fr 1fr; gap: 0 22px;
+               align-items: start; }
+}
+
+/* Very wide: give the racks room to breathe rather than growing indefinitely. */
+@media (min-width: 1400px) {
+  .page { max-width: 1280px; }
+}
+
+.rack-names-wide { margin-top: 26px; padding-top: 20px;
+                   border-top: 1px solid var(--line); }
+
+/* ── jar labels ──────────────────────────────────────────────────────────────
+ * Both the 3-letter code and the wrapped full name are always in the DOM; CSS
+ * decides which one you see. That keeps hovering across 56 jars free — no React
+ * state, no re-render, no lag.
+ */
+
+/* No transition here, deliberately. A CSS transition on an SVG <g>'s opacity
+ * got stuck permanently "running" in Chromium — the clone of an identical
+ * element computed to 1 while the original stayed pinned at 0, which is what a
+ * never-settling transition looks like. It was decoration on a control that
+ * should feel instant, and 56 simultaneous fades were not free either. */
+.jar-full { opacity: 0; pointer-events: none; }
+.jar-full-scrim { fill: #14100c; opacity: 0.85; }
+.jar-full-text { fill: #f6f1e8; font-size: 5.4px; font-weight: 700;
+                 letter-spacing: 0.02em; }
+
+/* Hover reveals one jar's full name. */
+.jar:hover .jar-full { opacity: 1; }
+.jar:hover .jar-code { opacity: 0 !important; }
+
+/* A dimmed jar in a recipe still answers a hover — you may be checking what the
+   recipe did NOT call for. It just does not shout. */
+.jar-dim:hover .jar-full { opacity: 0.9; }
+
+/* Hover is a pointer affordance; on a touch screen it either does nothing or
+   sticks after a tap, so suppress it there — tapping a jar opens its detail
+   sheet instead. */
+@media (hover: none) {
+  .jar:hover .jar-full { opacity: 0; }
+  .jar:hover .jar-code { opacity: 1 !important; }
+}
+
+.rack-controls { display: flex; flex-wrap: wrap; align-items: center;
+                 gap: 10px; margin-bottom: 12px; }
+.rack-controls .segmented.inline { margin-bottom: 0; flex: 1; min-width: 200px; }
+
+/* A one-row shelf: caption beside the jars, not stacked above them. One jar
+   under a full-height heading read as an orphaned section rather than a small
+   shelf, and the extra height pushed it below the bottom of everything else. */
+.rack-compact { display: flex; align-items: center; gap: 10px; }
+.rack-compact .rack-label { margin-bottom: 0; flex: none; }
+.rack-compact .rack-svg { flex: none; }
+
+/* ── rack page: the shelves get the whole width ──────────────────────────────
+ * The drawing is the page. It used to sit in a 1fr column beside a fixed 300px
+ * aside, which was the right call while that aside always held something — but
+ * once the jar panel became absent-until-selected, the reserved column was a
+ * 300px hole down the right of the screen and the racks were drawn smaller than
+ * the window allowed for no reason anyone could see.
+ *
+ * So the panels moved BELOW the shelves instead of beside them. That also kills
+ * a reflow that the sidebar would otherwise have caused: a column appearing when
+ * you click a jar would narrow the shelves and shrink every jar in the picture,
+ * which is exactly the sort of small lie the rack visual cannot afford.
+ */
+
+.rack-panels > .panel:last-child { margin-bottom: 0; }
+
+@media (min-width: 900px) {
+  /* Two panels side by side under the drawing: the tapped jar, and re-shelve.
+     Neither is tall, and a single 1500px-wide panel is unreadable. */
+  .rack-panels {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+    gap: 0 22px;
+    align-items: start;
+    margin-top: 20px;
+  }
+  .jar-panel { padding: 16px 18px; }
+  /* The note is prose. It stops at a readable measure however wide the window
+     gets, rather than running the full span of a monitor. */
+  .jar-panel .jar-note { max-width: 62ch; }
+}
+
+/* Very wide: let the page use the window instead of stranding it in the middle. */
+@media (min-width: 1500px) {
+  .page { max-width: 1520px; }
+}
+
+/* The tablespoon, shouted. Distinguishable from a teaspoon by shape AND colour,
+   because the two abbreviations differ by one character and mistaking them is a
+   threefold error — the largest available in a kitchen that measures salt to
+   the gram. */
+/* Misreading these two is a 3x error, and every accent in this palette is some
+ * shade of orange -- two hues from it would sit a few degrees apart and read as
+ * the same colour at a glance. So the tablespoon gets a filled chip instead: it
+ * differs from the teaspoon in fill, not in hue, which survives a dim kitchen,
+ * a cheap screen and a sideways glance. The chip goes on the RARE, LARGE one,
+ * so the unmarked default is the one that is usually right. */
+.unit-tbsp {
+  color: #16130f;
+  background: var(--warn);
+  font-weight: 800;
+  letter-spacing: 0.02em;
+  border-radius: 5px;
+  padding: 0 5px;
+  margin: 0 1px;
+  white-space: nowrap;
+}
+.unit-tsp { font-weight: 700; letter-spacing: 0.02em; }
+/* The big salt readout is already one shouted line; a chip inside it competes
+   with the number it is attached to. */
+.salt-big .unit-tbsp {
+  color: inherit; background: none; padding: 0; margin: 0;
+}
+
+/* ── one jar, up close ───────────────────────────────────────────────────────
+ * Rendered identically in the phone sheet and the desktop aside. The note is
+ * the point of the screen, so it gets body-copy size and a rule down its left
+ * edge; everything above it is there to identify the jar and say where on the
+ * wall to reach.
+ */
+
+.jar-head { display: flex; align-items: flex-start; gap: 12px; margin-bottom: 12px; }
+.jar-glyph { width: 38px; height: 50px; flex: none; }
+.jar-title { flex: 1; min-width: 0; }
+.jar-title h2 { font-size: 20px; line-height: 1.25; margin: 0 0 3px;
+                letter-spacing: -0.02em; }
+
+/* Where to reach for it. Set in the accent because it is the one line here that
+   answers a question you asked with your hands. */
+.jar-where { font-size: 12.5px; color: var(--accent); margin: 0;
+             display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px; }
+.jar-where span { opacity: 0.45; }
+.jar-where em { flex-basis: 100%; font-style: normal; color: var(--muted); }
+
+/* A 44px target, because it sits beside a heading and gets tapped with a thumb.
+   Square and quiet: the sheet's real dismissals are the backdrop and Escape. */
+.jar-close { flex: none; width: 34px; height: 34px; padding: 0; font-size: 22px;
+             line-height: 1; color: var(--muted); background: none;
+             border-color: transparent; }
+.jar-close:hover { color: var(--text); background: var(--surface-2); }
+
+.jar-chips { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 14px; }
+
+/* The heat number, drawn. 0-10 straight from rack.py, so a 2 and an 8 are
+   different at a glance instead of two digits you have to read. */
+.heat-meter { display: inline-flex; align-items: center; gap: 6px; }
+.heat-meter i { width: 34px; height: 4px; border-radius: 2px; display: block;
+                background: linear-gradient(90deg, var(--warn), var(--hot));
+                box-shadow: 0 0 0 1px rgba(217, 74, 43, 0.35); }
+.heat-meter b { font-weight: 700; font-variant-numeric: tabular-nums; }
+
+/* The handling rule -- the reason anyone taps a jar. Body copy, not a caption:
+   these run to a full sentence or three and used to be squeezed into a grey
+   box at 14px with the rest of the sheet elbowing them. */
+.jar-note { font-size: 15px; line-height: 1.55; color: var(--text); opacity: 0.92;
+            border-left: 2px solid var(--accent-dim); padding: 2px 0 2px 13px;
+            margin: 0 0 16px; }
+
+.jar-owner { border-top: 1px solid var(--line); padding-top: 14px; }
+.jar-owner .segmented { margin-bottom: 8px; }
+.jar-uses { font-size: 12px; color: var(--muted); margin: 0; }
+
+/* The sheet is now sized by its content and closes without a footer button, so
+   it needs a little more bottom room than one that ended in a 14px-padded row. */
+.jar-sheet { padding-bottom: calc(24px + env(safe-area-inset-bottom)); }
+
+@media (min-width: 900px) {
+  /* In the aside the sheet's chrome is gone, so the header carries the panel. */
+  .jar-panel .jar-title h2 { font-size: 18px; }
+  .jar-panel .jar-note { font-size: 14px; }
+}
+
+/* ── bowls ───────────────────────────────────────────────────────────────────
+ * The blend, split by the moment each jar enters the pan. Measuring everything
+ * out before starting is the right habit; tipping it all into ONE bowl is how a
+ * finishing spice ends up boiling for forty minutes. Same bowl, same moment.
+ */
+
+.bowl { margin-bottom: 16px; }
+.bowl:last-of-type { margin-bottom: 6px; }
+.bowl-head { display: flex; align-items: center; gap: 9px; margin-bottom: 6px; }
+.bowl-n { width: 20px; height: 20px; border-radius: 50%; flex: none;
+          background: var(--accent-dim); color: var(--text); font-size: 11px;
+          font-weight: 700; display: grid; place-items: center; }
+.bowl-when { display: flex; flex-direction: column; min-width: 0; }
+.bowl-when strong { font-size: 13px; }
+.bowl-when em { font-style: normal; font-size: 11.5px; color: var(--muted); }
+.bowl .blend { background: var(--surface-2); border-radius: 10px;
+               padding: 2px 12px; }
+.bowl-apart { font-size: 11.5px; color: var(--warn); margin: 6px 0 0;
+              padding-left: 29px; }

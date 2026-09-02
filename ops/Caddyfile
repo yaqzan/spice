@@ -1,0 +1,50 @@
+# spice.yaqzan.dev — the pretty name, reachable only from the tailnet.
+#
+# The trick this file implements: `spice.yaqzan.dev` gets a PUBLIC DNS A record
+# pointing at this machine's TAILSCALE address (100.80.250.61). That address is
+# CGNAT space — routable from inside the tailnet and nowhere else. So the name
+# resolves for everyone, and connects for nobody who is not on the tailnet.
+# Tailscale does the access control; Cloudflare only does the naming.
+#
+# Because nothing on the public internet can reach the host, the certificate has
+# to come from a DNS-01 challenge rather than HTTP-01 or TLS-ALPN. That needs a
+# Caddy build WITH the Cloudflare DNS module — the vanilla winget binary does not
+# have it. See ops/README.md for the one-line download.
+#
+# Run: caddy run --config C:\Development\Spice\ops\Caddyfile
+{
+	# No email set: Caddy registers an anonymous ACME account, which is fine for
+	# a single internal host. Add one here to get Let's Encrypt expiry mail.
+	admin off
+}
+
+spice.yaqzan.dev {
+	# Bind ONLY to the tailnet interface. Belt and braces: even if the DNS record
+	# were ever pointed somewhere else, or the laptop joined a hostile LAN, there
+	# is no listener on any other address to reach.
+	bind 100.80.250.61
+
+	tls {
+		dns cloudflare {env.CLOUDFLARE_API_TOKEN}
+		resolvers 1.1.1.1
+	}
+
+	# One upstream: Flask serves the API and the built SPA on the same port.
+	reverse_proxy 127.0.0.1:5003 {
+		# A recipe call sits waiting on OpenRouter for up to three minutes. The
+		# default
+		# proxy read timeout would cut it off mid-generation.
+		transport http {
+			read_timeout 300s
+		}
+	}
+
+	encode gzip
+
+	log {
+		output file C:\Development\.server\logs\spice-caddy.log {
+			roll_size 10MiB
+			roll_keep 3
+		}
+	}
+}
