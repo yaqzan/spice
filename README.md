@@ -36,20 +36,18 @@ with agents heavily, and the docs there are the project's memory.
 ## What I think is interesting
 
 - Access control trusts only the raw socket's remote address, and explicitly refuses to
-  trust `X-Forwarded-For`, which the same box's public tunnel would let anyone forge
-  (`spice/auth.py`, locked in by `tests/test_spice.py::test_only_the_tailnet_block_counts`).
-- Salt-unit correctness is a first-class design constraint, not a formatting detail. The
-  71% volume difference between salt brands is called out as the direct cause of the one
-  dish that scored 2/10 (`.claude/docs/audit.md`).
-- `rack.STAGES` ordering is load-bearing. The tuple order in `rack.py` drives
-  `schema.group_blend()`'s premix-bowl numbering, so the recipe card's bowl order always
-  matches the physical order things go in the pan.
+  trust `X-Forwarded-For`, which the same box's public tunnel would let anyone forge.
+- Salt-unit correctness is a first-class design constraint, not a formatting detail. A
+  71% volume difference between salt brands caused the one dish that scored 2/10.
+- `rack.STAGES` ordering is load-bearing. The tuple order drives the premix-bowl
+  numbering, so the recipe card's bowl order always matches the physical order things go
+  in the pan.
 - Every jar is guaranteed placed exactly once on boot, and layout writes are
   all-or-nothing, so a half-applied layout can never point the rendered picture at the
   wrong shelf.
 - The prompt is rebuilt from the database on every call instead of maintained as text.
-  This was a direct fix for the chat-project predecessor it replaced, whose system
-  prompt froze and never updated (`.claude/docs/audit.md`).
+  The predecessor I replaced kept its system prompt as static text and it froze, never
+  updating as I changed my mind about the rack.
 
 ## Running it
 
