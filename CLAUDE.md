@@ -2,19 +2,15 @@
 
 ## What this is
 
-**Spice** answers "what do I do with pork belly" with a picture of the real rack,
-the right jars lit up and numbered in pan order. Phone-first, desktop-capable.
+**Spice** answers "what do I do with pork belly" with a picture of the real rack, the right jars
+lit up and numbered in pan order. Phone-first.
 
-Live at **https://spice.yaqzan.dev** — deliberately public (doubles as a
-portfolio piece). The rack visual and a frozen demo recipe are open to anyone;
-everything else needs the request to arrive **from a tailnet peer**, via the
-tailnet URL `serve` prints at startup. No access code, no unlock screen —
-removed on purpose (see ops/README.md).
-
-**Public repo (github.com/yaqzan/spice), plug and play.** The owner's state is gitignored:
-`data/` (DB + key), `.env` (`SPICE_PUBLIC_ORIGIN`, `SPICE_TODO_FILE`), `ops/cloudflared-config.yml`,
-`ops/Caddyfile`. Tracked code carries no machine path, domain, tailnet name/IP or tunnel UUID;
-`.example` files document the shape. Pre-2026-09-23 history lives in private `yaqzan/spice-archive`.
+- Live at **https://spice.yaqzan.dev**, public on purpose. Anyone gets the rack and a frozen demo
+  recipe; the rest needs a **tailnet peer** (URL printed by `serve`). No access code (removed).
+- **Public repo (github.com/yaqzan/spice), plug and play.** Owner state is gitignored: `data/`
+  (DB + key), `.env` (`SPICE_PUBLIC_ORIGIN`, `SPICE_TODO_FILE`), `ops/cloudflared-config.yml`,
+  `ops/Caddyfile` (`.example` copies tracked). No machine path, domain, tailnet name/IP or tunnel
+  UUID in tracked files. Pre-2026-09-23 history: private `yaqzan/spice-archive`.
 
 ## Commands
 
@@ -23,6 +19,7 @@ python -m spice serve            # API + built SPA on :5003 (loopback + tailnet)
 python -m spice ask "pork belly" --lb 1.5 [--model X]
 python -m spice prompt           # print the exact system prompt
 python -m spice rate 12 8 --salt -1
+python -m spice log "Title" --cuisine X [--rating N]   # record a dish cooked outside the app
 python -m spice rack | stats | reshelve [--apply] | stock <spice> <state>
 pytest                           # no network or API key needed
 
@@ -32,68 +29,54 @@ C:\Development\server.ps1 -Action start -Service spice    # api + tunnel (this m
 ops\windows\install-tasks.ps1 -Controller C:\Development\server.ps1   # watchdog task; ELEVATED shell
 ```
 
-`SPICE_OPEN=1` treats every caller as the owner. **Development only** — loopback
-is where the public tunnel lands, so it opens the spend to the internet.
+**`SPICE_OPEN=1` treats every caller as the owner. Development only:** the public tunnel lands on
+loopback, so it opens the spend to the internet.
 
 ## Invariants
 
-Cost real money, real food, or real trust.
-
-- **`rack.py` is the only place a spice name, alias or handling rule exists.**
-  No spice name in TypeScript — a second list drifts within a week. The sauce
-  shelf is part of the registry; each bottle carries `salt_per_tbsp` (a tbsp of
-  soy is a third of a pound of meat's salt budget) and the prompt subtracts it.
-- **Salt lives in grams; the screen speaks only spoons.** Grams are the storage
-  unit (brand-independent); `recipes.decorate()` converts to spoons of the
-  configured brand on the way out, prose included (`schema.spoonify`). No two
-  units for one thing on the card. Baseline: **7.5 g/lb (1.65%), measured out**
-  — the rate every dish rated 8.5+ actually used; do not moderate it toward a
-  textbook 1%. Table salt is 6.0 g/tsp vs. Diamond Crystal's 2.8 g/tsp — crossing
-  that boundary in volume is a 2x error, and caused the one 2/10 dish. The rack's
-  salt jar label reads from the same setting.
-- **The card addresses the cook, second person.** He reads it about himself;
-  third person reads like someone else's notes.
-- **A tailnet peer address is the only credential, judged on the TCP socket,
-  never a header.** The app is also on a public tunnel; trusting
-  `X-Forwarded-For` would let anyone forge a peer. Bind loopback + the tailnet
-  address, never `0.0.0.0`. Do not reintroduce a shared code.
-- **The spend cap counts billed API calls, not saved recipes.** Counting
-  successes made failures free, and one failure can bill three completions.
-- **`rack.STAGES` is chronological and `schema.group_blend()` numbers the bowls
-  from it.** The cook premixes before lighting the stove — a stage is a
-  physical bowl, not a hint. Reordering the tuple reorders his counter. Steps
-  name a bowl instead of re-listing spices, so the two cannot disagree.
-- **Every jar is placed exactly once**, checked at boot. Layout writes are
-  all-or-nothing — a half-applied layout points the picture at the wrong shelf.
-- **A jar is the same size on every shelf.** Each SVG caps width in proportion
-  to jar count, or a short shelf draws big jars and implies bigger containers.
-- **Never write a relative date without an absolute one beside it.** "3d ago"
-  goes stale in a saved payload, doc, or vault note. Prompt states today's date
-  up front; every entry carries its real date.
-- **`127.0.0.1`, never `localhost`** (IPv6-first resolution doubles timeouts;
-  see global rules).
+- **`rack.py` is the only place a spice name, alias or handling rule exists.** No spice name in
+  TypeScript (a second list drifts). The sauce shelf is in the registry; each bottle's
+  `salt_per_tbsp` is subtracted by the prompt.
+- **Salt is stored in grams; the screen shows only spoons.** `recipes.decorate()` converts to
+  spoons of the configured brand, prose included (`schema.spoonify`). Baseline **7.5 g/lb
+  (1.65%)**, measured from every dish rated 8.5+; don't moderate it toward 1%. Table salt 6.0 g/tsp
+  vs Diamond Crystal 2.8 g/tsp: mixing them up by volume is a 2x error. The salt jar label reads
+  the same setting.
+- **The card speaks to the cook in second person.**
+- **A tailnet peer address is the only credential, judged on the TCP socket, never a header**
+  (`X-Forwarded-For` is forgeable via the public tunnel). Bind loopback + tailnet address, never
+  `0.0.0.0`. Don't bring back a shared code.
+- **The spend cap counts billed API calls, not saved recipes.** One failure can bill three calls.
+- **`rack.STAGES` is chronological; `schema.group_blend()` numbers the bowls from it.** A stage is
+  a physical premix bowl, so reordering the tuple reorders the counter. Steps name a bowl instead
+  of re-listing spices.
+- **Every jar is placed exactly once**, checked at boot. Layout writes are all-or-nothing.
+- **A jar is the same size on every shelf.** Each SVG caps width by jar count.
+- **Never write a relative date without the absolute one beside it.** The prompt states today's
+  date first; every entry carries its real date.
+- **`127.0.0.1`, never `localhost`** (IPv6-first resolution doubles timeouts).
 - **Bulk mutations dry-run by default**, `--apply` to commit.
-- **`server.ps1` python services must use `py -3.11`**, not bare `python`.
+- **`server.ps1` python services use `py -3.11`**, not bare `python`.
 
 ## Layout
 
-`rack.py` registry -> `prompt.py` (built fresh per request) -> OpenRouter ->
-`schema.normalise()` -> SQLite -> `api.py` -> SVG rack + recipe card.
+`rack.py` registry -> `prompt.py` (built per request) -> OpenRouter -> `schema.normalise()` ->
+SQLite -> `api.py` -> SVG rack + recipe card.
 
 | Module | Owns |
 |---|---|
-| `rack.py` | The registry: names, aliases, handling rules, default shelf |
-| `schema.py` | The JSON contract, name resolution, measurement formatting |
-| `prompt.py` | System prompt, assembled from live state — nothing hand-kept |
+| `rack.py` | Registry: names, aliases, handling rules, default shelf |
+| `schema.py` | JSON contract, name resolution, units |
+| `prompt.py` | System prompt, built from live state |
 | `db.py` | Layout, stock, recipes, ratings, spend ledger |
 | `auth.py` | Tailnet check, daily spend cap |
-| `recipes.py` | Request pipeline, rack view, re-shelve proposal |
-| `vault.py` | One rating reminder line in the owner's Obsidian To Do |
+| `recipes.py` | Request pipeline, rack view, re-shelve |
+| `vault.py` | Rating reminder line |
 
 ## Detail
 
-- [.claude/docs/rack.md](.claude/docs/rack.md) — shelf logic, name-resolution traps
-- [.claude/docs/prompt.md](.claude/docs/prompt.md) — every prompt rule and its evidence
-- [.claude/docs/audit.md](.claude/docs/audit.md) — review of the chat project this replaced
-- [.claude/docs/vault.md](.claude/docs/vault.md) — the Obsidian rating reminder
-- [ops/README.md](ops/README.md) — hosting, the tunnel, why the code is gone
+- [rack.md](.claude/docs/rack.md): shelves, jar drawing, name resolution
+- [prompt.md](.claude/docs/prompt.md): every prompt rule and its evidence
+- [audit.md](.claude/docs/audit.md): review of the chat project this replaced
+- [vault.md](.claude/docs/vault.md): the Obsidian rating reminder
+- [ops/README.md](ops/README.md): hosting, what's public, tunnel, tailnet-only variant

@@ -1,157 +1,111 @@
-# The rack: registry, layout, and the traps in both
+# The rack: registry, layout, and traps
 
-## One list, no second list
+## One list only
 
-`spice/rack.py` is the only place a spice name, alias, handling rule or default
-shelf position exists. The frontend receives jars over the wire and renders
-what it's given — no spice name anywhere in `frontend/src`. **Do not add one.**
-A second inventory drifts within a week, and the failure is silent (the visual
-points at a jar that isn't there).
+- **`spice/rack.py` is the only place a spice name, alias, handling rule or default shelf position
+  exists.** The frontend renders the jars it's sent; no spice name anywhere in `frontend/src`.
+  Don't add one: a second list drifts silently and the visual points at a missing jar.
+- `validate_default_layout()` runs on every boot and refuses to start if a spice is placed twice,
+  missing, or unknown.
 
-`validate_default_layout()` runs on every boot and refuses to start if a spice
-is placed twice, missing, or unknown.
+## Where the jars sit
 
-## Why the jars sit where they do
+Brief: "top rows for most used, across both racks."
 
-Brief: "top rows for most used, across both racks." Implemented as:
+- **Row 1 is what you grab without looking**; frequency drops going down. Labels: Daily / Weekly /
+  Regular / Rare.
+- **Left rack: savoury base** (alliums, earth spices, world blends, whole seeds). **Right rack:
+  heat and finishing** (chiles, American/Caribbean blends, warm aromatics, specialties).
+- The left/right split isn't in the brief but stays: most recipes grab from both sides, and
+  re-shelving can re-sort rows without moving a jar to the other wall.
+- The starting order is **a guess**, from cuisine rotation and the "salty, garlicky, savoury,
+  spicy" profile. The app is built to correct it.
 
-- **Row 1 is what you reach for without looking**, frequency drops going down.
-  Labels: Daily / Weekly / Regular / Rare.
-- **Left rack is savoury foundation** (alliums, earth spices, world blends,
-  whole seeds). **Right rack is heat and finishing** (chile arsenal,
-  American/Caribbean blends, warm aromatics, specialties).
+## How a jar is drawn
 
-The left/right split isn't in the brief but is kept — most recipes here grab
-from each side (garlic powder, then cayenne), turning search into reflex. It
-also lets the re-shelve proposal re-sort rows without ever changing which wall
-a jar lives on.
+- A 38x50 box (`JarShape` in SpiceRack.tsx): near-black cap narrower than the glass, shoulder curve
+  (`JAR_PATH`, one path shared by fill, hover scrim and shading clip), contents stopping below the
+  neck, cream paper label near the base.
+- Caps are **not** tinted per jar (owner decision): matching caps make 56 jars read as one set;
+  identity is the colour band between cap and label.
+- `JarDetail` renders the same `JarGlyph`, so a tapped jar looks the same.
 
-Initial ordering is **inference, not measurement** — derived from cuisine
-rotation and the "salty, garlicky, savoury, spicy" profile, not counted usage.
-A starting position the app is built to correct.
+**The label must stay legible regardless of jar colour.** Rejected designs, don't bring back:
 
-## How a jar is drawn, and why the label looks the way it does
+1. Fixed dark ink on glass: invisible on nigella, urfa, cloves.
+2. Per-jar WCAG ink (`readableInk()`): ink flipped black/white jar to jar, looked like mismatched
+   stickers.
+3. Solid black chip, light ink: 56 black tapes read as a barcode sheet.
+4. Current: cream paper, dark ink, near the base, sized to line count. Colour stays the loudest
+   thing on the jar.
 
-A jar is four ideas in a 38x50 box (`JarShape` in SpiceRack.tsx): a uniform
-near-black cap narrower than the glass, a shoulder curve (`JAR_PATH`, one path
-string shared by fill/hover-scrim/shading-clip), contents stopping short of the
-neck, and a cream paper label near the base. Caps are deliberately NOT tinted
-per jar — matching caps make 56 jars read as one bought set, identity living in
-the colour band between cap and label. `JarDetail` renders the same `JarGlyph`
-so a tapped jar never looks like a different jar.
+Label text:
 
-The label went through four designs; the surviving constraint is **one label
-system whose legibility owes nothing to jar colour**:
+- Abbreviations allow 8 characters per word (`LABEL_CHARS`), so most labels are full words.
+- Lines of 7+ characters condense via SVG `textLength`. Don't shrink the font rack-wide or
+  re-truncate. A word that still doesn't fit cuts at 7 letters + a period (CORIAND.).
+- Codes stay unique across the kitchen via `assignLabels`.
+- Two highlighted jars side by side condense their captions to the cell (`hitCells` +
+  `textLength`) so they don't overlap.
 
-1. Fixed near-black ink on glass — invisible on nigella, urfa, cloves.
-2. Per-jar WCAG ink (`readableInk()`) — legible, but ink flipped black/white
-   jar to jar and the shelf read as mismatched stickers.
-3. Solid black chip, light ink — uniform, but 56 black tapes over the widest
-   part of the glass read as a barcode sheet, colours read as margins.
-4. Now: cream paper, dark ink, anchored near the base, sized to line count. The
-   colour stays the loudest thing on the jar — the point of colour-coding at
-   all.
+## The sauce shelf
 
-Abbreviations are 8 characters/word (`LABEL_CHARS`), so most of the rack is
-complete words. Lines of 7+ characters condense via SVG `textLength` (like
-print) — do not shrink the font rack-wide or re-truncate; a word that still
-doesn't fit cuts at 7 letters + a period (CORIAND.). Codes stay kitchen-unique
-via `assignLabels`.
-
-Two highlighted jars side by side condense their name captions to the cell
-(`hitCells` + `textLength`) instead of overlapping mid-air.
-
-## The sauce shelf, and the salt that used to be invisible
-
-Bottles and tubs — soy, dark soy, oyster sauce, sesame oil, mirin, salted
-cooking sake, instant dashi, doubanjiang, gochujang, LKK garlic soybean paste —
-are registry entries and a drawn shelf like any other: a seasoning the app
-can't see is one the model won't use, and one it can't weigh quietly wrecks the
-salt.
-
-A tbsp of light soy carries ~2.4g salt — a third of a lb of meat's whole
-budget — and that salt used to appear nowhere in `salt.grams`.
-`Spice.salt_per_tbsp` records it, the prompt prints it as a flag, and
-`SALT_DOCTRINE` tells the model to subtract the total and show the subtraction.
-Toasted sesame oil carries **0** deliberately — an invented figure would
-subtract from a real dish.
-
-Three placement notes:
-
-- **A drawn shelf is not the retired pantry.** `pantry`/`cupboard` names stay
-  retired — they were lists beside a picture. Everything that can hold a jar is
-  drawn, sauce shelf included.
-- **Unqualified "soy sauce" resolves to the light one** — dark soy must be
-  asked for by name (same rule keeps bulk pepper from losing "black pepper" to
-  the Zanzibar jar). Dark soy is used by the tsp for colour; defaulting to it
-  would be a fivefold error.
-- **`black bean garlic sauce` resolves to the garlic soybean paste**, bought
-  instead of it.
-
-Rows here group by kind, not frequency — Daily/Weekly/Regular/Rare would be a
-lie about this shelf. `rack.wall_racks()` answers "does this shelf have
-frequency rows" and travels over the wire (`wall_racks` in the rack view)
-instead of every screen hardcoding `!== 'stove'`.
+- Soy, dark soy, oyster sauce, sesame oil, mirin, salted cooking sake, instant dashi, doubanjiang,
+  gochujang and LKK garlic soybean paste are registry entries on a drawn shelf. A seasoning the app
+  can't see, the model won't use; one it can't weigh wrecks the salt.
+- **A tbsp of light soy carries ~2.4 g salt**, a third of a lb of meat's budget. `Spice.salt_per_tbsp`
+  records it, the prompt flags it, and `SALT_DOCTRINE` tells the model to subtract it and show the
+  subtraction.
+- Toasted sesame oil carries **0** on purpose: an invented figure would subtract from a real dish.
+- **A drawn shelf is not the retired pantry.** `pantry`/`cupboard` stay retired (they were lists
+  beside a picture). Everything that holds a jar is drawn.
+- **Plain "soy sauce" resolves to light soy.** Dark soy must be named (it's used by the tsp for
+  colour; defaulting to it is a fivefold error). Same rule keeps bulk pepper from losing "black
+  pepper" to the Zanzibar jar.
+- **`black bean garlic sauce` resolves to the garlic soybean paste** (bought instead of it).
+- Rows here group by kind, not frequency. `rack.wall_racks()` says which shelves have frequency
+  rows and is sent as `wall_racks` in the rack view. Don't hardcode `!== 'stove'` in screens.
 
 ## Always in the house
 
-`rack.STAPLES` — fresh garlic, fresh ginger, the two rices. Not jars, and
-deliberately not resolvable as jars: `resolve()` refuses anything called
-*fresh* (dried ginger in the jar is a different spice, not a weaker one). But
-silence read as absence — the model was writing them onto the shopping list as
-if a trip out were needed. Prompt now names them as always available; they
-still go in `from_kitchen` with an amount.
+- `rack.STAPLES`: fresh garlic, fresh ginger, the two rices. Not jars and not resolvable as jars
+  (`resolve()` refuses anything called *fresh*; dried ginger is a different spice).
+- The prompt names them as always available, or the model puts them on the shopping list. They
+  still go in `from_kitchen` with an amount.
 
 ## Re-shelving
 
-`recipes.reshelve_proposal()` ranks jars by how many recipes called for them
-and proposes a new arrangement. Two modes:
+`recipes.reshelve_proposal()` ranks jars by how many recipes used them.
 
-- **`balanced`** (default) — keeps every jar on its current rack, re-sorts rows
-  within it. Preserves the left/right split.
-- **`strict`** — ranks all 56 globally, fills left row 1, right row 1, left row
-  2... Literal reading of the brief, at the cost of the split.
+- **`balanced`** (default): every jar stays on its rack; rows re-sort within it.
+- **`strict`**: ranks all 56 globally, fills left row 1, right row 1, left row 2, and so on. Loses
+  the left/right split.
+- Ties break on current position, so unused jars don't shuffle.
+- The stove shelf is never re-sorted (four always-reached jars; moving the salt is annoying).
+- **The proposal only changes the picture.** Committing writes the layout to the DB; moving the
+  physical jars is the owner's job, and the UI says so.
 
-Ties break on current position, so unused jars never shuffle for no reason.
+## Name resolution traps
 
-The stove shelf is never re-sorted — four constant-reach jars don't need
-ranking, and moving the salt would be actively annoying.
+`rack.resolve()` maps whatever the model calls a spice onto a jar ("ground cumin", "Kashmiri
+chilli", "chili flakes" all land). Three behaviours matter, all tested:
 
-**The proposal only ever changes the picture.** Committing writes the new
-layout to the database; physical jars are the owner's problem. The UI says so.
+1. **Short single-word aliases only match exactly.** Aliases under 6 characters with no space
+   can't match inside a longer phrase, or `"truffle salt"` lands on the kosher salt. `garlic salt`,
+   `celery salt`, `onion salt` depend on this.
+2. **Anything with the standalone word `fresh` returns `None`** and goes to `from_kitchen`
+   (`"fresh ginger root"` used to hit the dried jar). `"freshly ground black pepper"` still
+   resolves.
+3. **Longest alias wins.** `"sichuan peppercorns"` matches both `sichuan peppercorn` and the black
+   pepper jar's `peppercorns`; the longer wins. A tie at the same length returns `None`.
 
-## Name resolution — the part that bites
+An unresolvable name is never an error: it moves to `from_kitchen` with an on-screen warning.
 
-`rack.resolve()` maps whatever a model calls a spice onto a jar. Forgiving by
-design ("ground cumin", "Kashmiri chilli", "chili flakes" all land correctly);
-three specific behaviours are load-bearing, all covered by tests.
+## Jars that need a human
 
-**1. Short single-word aliases can't swallow a longer phrase.** The containment
-fallback used to resolve `"truffle salt"` to the kosher salt on the stove shelf
-(substring match on `"salt"`) — wrong jar, and silently drops a real shopping
-item. Aliases shorter than 6 characters with no space only match exactly.
-`garlic salt`, `celery salt`, `onion salt` all depend on this.
-
-**2. Anything called "fresh" is refused outright.** `"fresh ginger root"` used
-to resolve to the dried jar. Now any probe containing the standalone word
-`fresh` returns `None` and lands in `from_kitchen`. `"freshly ground black
-pepper"` still resolves — different word.
-
-**3. Longest alias wins, rather than requiring a unique hit.** `"sichuan
-peppercorns"` matches both `sichuan peppercorn` and the bare `peppercorns`
-alias on the black pepper jar. Demanding uniqueness returned nothing; longest
-overlap wins. A genuine tie at the same length returns `None`.
-
-An unresolvable name is never an error — it moves to `from_kitchen` with an
-on-screen warning. A recipe with a caveat beats a 500.
-
-## Jars that need a human, not code
-
-- **"Red Pepper"** — genuinely ambiguous, one shelf from both Cayenne and
-  Crushed Chili. Registry flags it and tells the model to prefer a named chile;
-  real fix is a label.
-- **"Black Fungus"** — dried wood ear mushroom, not a spice. Registry marks it
-  `form='ingredient'` with soaking instructions so it never lands in a
-  teaspoon-measured blend.
-- **"Umami Steak Seasoning"** — carries its 2/10 in its handling note, or the
-  model reaches for it exactly where it failed.
+- **"Red Pepper"**: ambiguous, one shelf from Cayenne and Crushed Chili. The registry tells the
+  model to prefer a named chile; the real fix is a new label.
+- **"Black Fungus"**: dried wood ear mushroom. `form='ingredient'` with soaking instructions, so it
+  never lands in a teaspoon blend.
+- **"Umami Steak Seasoning"**: its handling note carries its 2/10, or the model reaches for it
+  exactly where it failed.
