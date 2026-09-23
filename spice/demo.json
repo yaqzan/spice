@@ -1,0 +1,180 @@
+{
+  "title": "Gochujang Five-Spice Belly",
+  "cuisine": "Korean-inspired",
+  "protein": "Pork belly",
+  "portion_lb": 1.5,
+  "confidence": "adaptation",
+  "why_this": "Nothing has been rated yet, so this is a deliberate calibration dish that uses pork belly the way the rack says it wants it: a long marinade and warm spices. Gochujang and soy provide savoury depth with restrained background acidity, while cayenne keeps the heat genuinely present.",
+  "heat_level": 4,
+  "pan": "Rimmed sheet pan with wire rack - lets the pork render without stewing, then catches the glaze during the final broil.",
+  "times": {
+    "prep_min": 20,
+    "marinate_min": 240,
+    "cook_min": 105,
+    "total_min": 365
+  },
+  "blend": [
+    {
+      "spice": "Chinese 5 Spice",
+      "amount": "3/8 tsp",
+      "tsp": 0.375,
+      "stage": "marinade",
+      "step": 2,
+      "why": "Warm star-anise depth for the fatty pork."
+    },
+    {
+      "spice": "Gochugaru",
+      "amount": "1 tbsp",
+      "tsp": 3,
+      "stage": "marinade",
+      "step": 2,
+      "why": "Adds fruity chile flavour and red colour."
+    },
+    {
+      "spice": "Cayenne",
+      "amount": "1/2 tsp",
+      "tsp": 0.5,
+      "stage": "marinade",
+      "step": 2,
+      "why": "Supplies the direct heat that gochugaru lacks."
+    },
+    {
+      "spice": "Sesame Seeds",
+      "amount": "1 tsp",
+      "tsp": 1,
+      "stage": "garnish",
+      "step": 6,
+      "why": "Adds a toasted, nutty finish."
+    },
+    {
+      "spice": "Silk Chili (Aleppo)",
+      "amount": "1 tsp",
+      "tsp": 1,
+      "stage": "garnish",
+      "step": 6,
+      "why": "Adds gentle fruity chile aroma after cooking."
+    },
+    {
+      "spice": "Fried Garlic",
+      "amount": "1 tbsp",
+      "tsp": 3,
+      "stage": "garnish",
+      "step": 6,
+      "why": "Provides crisp garlic texture without burning it."
+    }
+  ],
+  "salt": {
+    "grams": 9,
+    "msg_grams": 0,
+    "when": "6.1g on the bare pork 45 minutes before marinating; 1.0g in the rice; soy and gochujang enter with the marinade.",
+    "rationale": "Target 9.0g total for 1.5 lb pork plus rice. Add 6.1g salt to the pork + approximately 1.2g salt from 1 tbsp soy sauce + approximately 0.7g from 2 tbsp gochujang + 1.0g in the rice = 9.0g total. No pre-salted rack blend is used."
+  },
+  "from_kitchen": [
+    {
+      "item": "Pork belly slab",
+      "amount": "1.5 lb"
+    },
+    {
+      "item": "Fine table salt",
+      "amount": "6.1g for the pork; the app should convert this to the shelf salt"
+    },
+    {
+      "item": "Fresh garlic",
+      "amount": "5 cloves, finely grated or minced"
+    },
+    {
+      "item": "Fresh ginger",
+      "amount": "1 1/2 tbsp, finely grated"
+    },
+    {
+      "item": "Gochujang",
+      "amount": "2 tbsp"
+    },
+    {
+      "item": "Soy sauce",
+      "amount": "1 tbsp"
+    },
+    {
+      "item": "Brown sugar",
+      "amount": "2 tsp"
+    },
+    {
+      "item": "Neutral cooking oil",
+      "amount": "1 tsp for the marinade, plus 1 tsp for the rack"
+    },
+    {
+      "item": "Short-grain or jasmine rice",
+      "amount": "1 cup dry"
+    },
+    {
+      "item": "Water",
+      "amount": "1 1/2 cups for the rice, or the amount required by the rice package"
+    },
+    {
+      "item": "Scallions",
+      "amount": "2, thinly sliced"
+    },
+    {
+      "item": "Garlic chives or cabbage",
+      "amount": "2 cups, to serve"
+    },
+    {
+      "item": "Fine table salt",
+      "amount": "1.0g for the rice"
+    }
+  ],
+  "steps": [
+    {
+      "n": 1,
+      "title": "Dry-brine pork",
+      "body": "Pat the pork belly dry and rub the bare meat and skin with 6.1g salt. Leave uncovered in the refrigerator for 45 minutes; if convenient, leave it overnight. Do not add any spices yet.",
+      "minutes": 45,
+      "heat": "none",
+      "watch_for": "The surface should look slightly tacky rather than wet. Pooling liquid means the pork was not patted dry enough."
+    },
+    {
+      "n": 2,
+      "title": "Build marinade",
+      "body": "Mix Chinese 5 Spice, gochugaru, cayenne, garlic, ginger, gochujang, soy sauce, brown sugar, and 1 tsp oil. Coat the pork thoroughly, cover, and refrigerate for 4 hours. Do not add extra salt.",
+      "minutes": 240,
+      "heat": "none",
+      "watch_for": "The marinade should be thick and cling to the pork. If it is watery, the coating will slide off and scorch less evenly."
+    },
+    {
+      "n": 3,
+      "title": "Start rice",
+      "body": "Rinse the rice, combine it with the measured water and 1.0g salt, and cook according to the package directions. Keep covered off heat when done.",
+      "minutes": 20,
+      "heat": "medium",
+      "watch_for": "The grains should be tender with no hard centre. If the rice is wet, leave it covered for 5 minutes longer rather than adding salt."
+    },
+    {
+      "n": 4,
+      "title": "Slow-roast belly",
+      "body": "Heat the oven to 325\u00b0F. Line a rimmed sheet pan, oil the wire rack lightly, and place the pork fat-side up. Scrape off heavy clumps of marinade so they do not blacken, reserving the thin coating on the meat. Roast until deeply browned and fork-tender, about 85-90 minutes.",
+      "minutes": 90,
+      "heat": "medium_low",
+      "watch_for": "You want steady rendering and dark red-brown edges, not black powdery spots. If the marinade smells acrid or is blackening early, lower the oven to 300\u00b0F."
+    },
+    {
+      "n": 5,
+      "title": "Broil the edges",
+      "body": "Move the rack near the broiler and broil for 2-4 minutes, watching constantly, until the fat blisters and the edges lacquer. Rest the pork for 8 minutes, then slice.",
+      "minutes": 4,
+      "heat": "high",
+      "watch_for": "The glaze should bubble and turn mahogany. Sugar burns suddenly; pull it as soon as any edge goes from brown to black."
+    },
+    {
+      "n": 6,
+      "title": "Finish and serve",
+      "body": "Scatter sesame seeds, Silk Chili (Aleppo), Fried Garlic, and scallions over the sliced pork. Serve immediately with the salted rice and cabbage or garlic chives.",
+      "minutes": 0,
+      "heat": "none",
+      "watch_for": "The fried garlic should stay crisp and pale golden. If it is dark or bitter, remove it rather than mixing it through the pork."
+    }
+  ],
+  "salt_check": "Taste one centre slice with a forkful of rice before serving. It should taste assertively savoury but not briny. If under-seasoned, dissolve 0.3g salt in 1 tsp hot water and brush it over the sliced pork; do not add dry salt directly to the crust.",
+  "serve_with": "Steamed salted rice, lightly wilted cabbage or garlic chives, and sliced scallions. Keep the vegetable side plain so the pork's garlic, warm spice, and chile remain the focus.",
+  "leftovers": "Refrigerate pork and rice separately for up to 3 days. Reheat the pork uncovered in a hot oven or air fryer so the fat re-crisps; add the Fried Garlic and Silk Chili only after reheating.",
+  "demo": true
+}

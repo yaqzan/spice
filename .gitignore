@@ -1,0 +1,13 @@
+__pycache__/
+*.pyc
+frontend/node_modules/
+frontend/dist/
+.pytest_cache/
+
+# Your own data and machine config - never committed (see README "Your data")
+data/
+.env
+*.local
+ops/cloudflared-config.yml
+ops/Caddyfile
+ops/windows/logs/

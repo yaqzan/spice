@@ -1,0 +1,18 @@
+# Optional: publish Spice through a Cloudflare tunnel.
+# Copy to ops/cloudflared-config.yml (gitignored) and fill in your own tunnel:
+#   cloudflared tunnel create spice
+#   cloudflared tunnel route dns spice spice.example.com
+#
+# One hostname is enough: the Flask app serves /api and the built SPA on one
+# port. Tunnel traffic arrives on loopback, so the app treats it as a visitor:
+# the rack and the demo recipe are public, everything that spends money or
+# shows your history needs a tailnet peer address (see ops/README.md).
+#
+# Run: cloudflared tunnel --config ops/cloudflared-config.yml run spice
+tunnel: <tunnel-uuid>
+credentials-file: <path-to-your-.cloudflared>/<tunnel-uuid>.json
+
+ingress:
+  - hostname: spice.example.com
+    service: http://127.0.0.1:5003
+  - service: http_status:404

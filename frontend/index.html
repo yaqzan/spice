@@ -1,0 +1,31 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <!-- viewport-fit=cover so the bottom tab bar can sit inside the home-bar
+         safe area on an iPhone instead of underneath it. -->
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, maximum-scale=1" />
+    <meta name="theme-color" content="#16130f" />
+    <title>Spice</title>
+
+    <!-- Icons, all drawn by tools/make_icons.py -- edit the geometry there, not
+         these files. The .ico is for browsers that still ask for one by name at
+         the site root; the SVG is what a modern tab actually renders. -->
+    <link rel="icon" href="/favicon.ico" sizes="32x32" />
+    <link rel="icon" href="/icon.svg" type="image/svg+xml" />
+
+    <!-- Add to Home Screen. iOS reads none of the manifest's icons, so the
+         apple-touch-icon link is not a duplicate of it -- drop this and an
+         iPhone bookmarks a screenshot of the page instead. -->
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+    <link rel="manifest" href="/manifest.webmanifest" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="apple-mobile-web-app-title" content="Spice" />
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>
