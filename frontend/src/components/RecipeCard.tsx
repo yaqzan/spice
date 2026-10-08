@@ -12,8 +12,8 @@ const HEAT_LABELS: Record<string, string> = {
   low: 'low 2',
   medium_low: 'med-low 3',
   medium: 'med 4-5',
-  medium_high: 'med-high 6-7',
-  high: 'high 8-9',
+  medium_high: 'med-hi 6-7',
+  high: 'hi 8-9',
 }
 
 function heatLabel(step: Step): string {
