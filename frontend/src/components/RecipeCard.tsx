@@ -42,7 +42,13 @@ function Times({ times }: { times: RecipePayload['times'] }) {
   if (times.marinate_min) parts.push(`${fmt(times.marinate_min)} marinating`)
   if (times.prep_min) parts.push(`${fmt(times.prep_min)} prep`)
   if (times.cook_min) parts.push(`${fmt(times.cook_min)} cooking`)
-  return <p className="times">{parts.join(' · ')}{times.total_min ? ` — ${fmt(times.total_min)} all in` : ''}</p>
+  return (
+    <p className="times">
+      {times.total_min ? <strong className="times-total">{fmt(times.total_min)} all in</strong> : null}
+      {times.total_min && parts.length ? ' — ' : ''}
+      {parts.join(' · ')}
+    </p>
+  )
 }
 
 function fmt(minutes: number): string {
