@@ -75,8 +75,8 @@ export function JarDetail({ jar, view, authed, onStock, onClose }: {
 
       <p className="jar-note">{jar.note}</p>
 
-      {authed && (
-        <div className="jar-owner">
+      <div className="jar-owner">
+        {authed ? (
           <fieldset className="segmented">
             <legend>How much is left</legend>
             {Object.entries(STOCK_LABELS).map(([value, label]) => (
@@ -84,14 +84,16 @@ export function JarDetail({ jar, view, authed, onStock, onClose }: {
                       onClick={() => onStock(value)}>{label}</button>
             ))}
           </fieldset>
-          <p className="jar-uses">
-            {jar.uses > 0
-              ? `Called for in ${jar.uses} recipe${jar.uses === 1 ? '' : 's'}.`
-              : 'Never called for yet.'}
-            {jar.opened_on ? ` Opened ${jar.opened_on}.` : ''}
-          </p>
-        </div>
-      )}
+        ) : (
+          <p className="jar-uses">{STOCK_LABELS[jar.stock] ?? jar.stock}.</p>
+        )}
+        <p className="jar-uses">
+          {jar.uses > 0
+            ? `Called for in ${jar.uses} recipe${jar.uses === 1 ? '' : 's'}.`
+            : 'Never called for yet.'}
+          {jar.opened_on ? ` Opened ${jar.opened_on}.` : ''}
+        </p>
+      </div>
     </div>
   )
 }

@@ -1148,11 +1148,11 @@ def test_anonymous_health_says_nothing_useful(public):
         assert leaky not in body, f'/api/health leaked {leaky} to an anonymous caller'
 
 
-def test_anonymous_rack_is_redacted_but_still_complete(public):
+def test_anonymous_rack_shows_stock_and_usage(public):
+    db.set_spice_state('gochugaru', 'out')
     jars = public.get('/api/rack').get_json()['jars']
-    assert len(jars) == len(rack.ALL_BY_KEY)          # the drawing is intact
-    assert all(j['uses'] == 0 for j in jars)          # habits are not
-    assert all(j['stock'] == 'ok' for j in jars)
+    assert len(jars) == len(rack.ALL_BY_KEY)
+    assert next(j for j in jars if j['spice_key'] == 'gochugaru')['stock'] == 'out'
 
 
 def test_the_owner_sees_the_private_fields(public):

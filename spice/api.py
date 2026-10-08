@@ -33,7 +33,7 @@ VERSION = '1.0.0'
 # is a service here" to a caller off the tailnet.
 PUBLIC_ENDPOINTS = frozenset({
     '/api/health',
-    '/api/rack',            # the showpiece; redacted for anonymous callers
+    '/api/rack',            # the showpiece, stock and usage included
     '/api/demo',            # a frozen example recipe, costs nothing to serve
     '/api/recipes',         # the cookbook, read-only
 })
@@ -129,7 +129,7 @@ def create_app():
 
     @app.get('/api/rack')
     def get_rack():
-        return jsonify(recipes.rack_view(include_private=authed()))
+        return jsonify(recipes.rack_view())
 
     @app.get('/api/demo')
     def demo():

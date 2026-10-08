@@ -121,18 +121,16 @@ def rate(recipe_id: int, overall, salt_delta: int = 0, heat_delta: int = 0,
 
 # ── the rack, as furniture ───────────────────────────────────────────────────
 
-def rack_view(include_private: bool = True) -> dict:
+def rack_view() -> dict:
     """Everything the visual needs in one payload: jars, positions, state, usage.
 
-    `include_private=False` is what an anonymous visitor gets. The rack is the
-    showpiece and is meant to be seen, but which jars are running low and how
-    often each one gets reached for is a picture of somebody's kitchen habits —
-    it is not interesting to a stranger and it is not theirs to read. The drawing
-    is identical either way.
+    Public, stock and usage counts included: the rack is the showpiece, and how
+    low each jar is and how often it is reached for is part of the picture.
+    Changing any of it is still the owner's.
     """
     layout = db.layout()
-    states = db.spice_states() if include_private else {}
-    counts = db.usage_counts() if include_private else {}
+    states = db.spice_states()
+    counts = db.usage_counts()
 
     # The salt jar is labelled from settings rather than from the registry. The
     # rack used to say "Kosher Salt" while every recipe said fine table salt --

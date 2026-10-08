@@ -8,7 +8,7 @@ import { useIsWide } from '../useIsWide'
 import type { Jar, Proposal, RackView } from '../types'
 
 export function RackPage() {
-  // The rack itself is public — it is the exhibit. Stock, usage counts and
+  // The rack, its stock and its usage are public. Changing stock and
   // re-shelving are the owner's, and the API refuses them anyway; hiding the
   // controls just avoids offering a button that can only 401.
   const { authed } = useAccess()

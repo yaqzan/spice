@@ -10,15 +10,14 @@ the owner's data are not public.
 | Open to anyone (GET only) | Needs a tailnet peer address |
 |---|---|
 | `/api/health`, minimal for a stranger | `/api/ask`, **the one that spends money** |
-| `/api/rack`, redacted | `/api/settings` (read and write) |
+| `/api/rack`, stock and usage included | `/api/settings` (read and write) |
 | `/api/demo`, one frozen real recipe | |
 | `/api/recipes`, `/api/recipes/<id>`, the cookbook with ratings and notes | `/api/models` |
 | the SPA's HTML/JS/CSS and icons | every mutation: stock, layout, ratings, archive |
 
 - **The guard is default-deny** (`PUBLIC_ENDPOINTS` in `spice/api.py`). A new route is private
   unless added to that list, so forgetting gives a 401, not a leak.
-- **Anonymous `/api/rack`** returns every jar, but each `uses` is 0 and each `stock` is `ok`
-  (usage and stock describe the owner's habits).
+- **`/api/rack`** is the same for everyone: every jar with its real `stock` and `uses`.
 - **Anonymous `/api/health`** returns only `status`, `authed: false`, `jars` and `version`.
 
 ## The network is the only credential
