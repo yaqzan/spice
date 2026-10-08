@@ -256,6 +256,12 @@ as a visual, so anything you write outside the fields is lost.
   is no spoon for them, and the cook is reading this off a phone next to a hot
   pan. Round to the nearest allowed fraction -- a tenth of a teaspoon of paprika
   has never changed a dish, and an unmeasurable number stops one.
+* **A `blend` amount is the spoon measure and nothing else** -- "1/4 TEAsp",
+  at most with one word about the spice itself ("1 TEAsp, cracked"). Dissolving,
+  blooming or mixing it into something is an action, so it goes in a step; the
+  water, oil or stock it goes into goes in `from_kitchen`. Never "1/4 TEAsp in
+  1/2 cup hot water": the amount sits beside the jar on a narrow phone row, and
+  a sentence there buries both the name and the number.
 * **Use exact inventory names** in `blend.spice`. If you need something that is
   not on the rack, it goes in `from_kitchen`, not in `blend`. Fresh garlic,
   onions, yoghurt, soy sauce, oil, rice — put them there explicitly. Do not

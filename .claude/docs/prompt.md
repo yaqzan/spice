@@ -166,6 +166,13 @@ Enforced in two places (two sources): `format_tsp()` governs anything the app
 computes (the salt line); blend amounts are free text from the model, so the
 prompt carries the same fraction list explicitly.
 
+**A blend amount is the spoon measure only.** One qualifier about the spice is
+fine ("cracked", which `_restate()` carries through a dedupe). Dissolving and
+its liquid go in a step and in `from_kitchen`. Evidence (2026-10-08): Hondashi
+came back as "a scant 1/4 TEAsp in 1/2 to 2/3 cup hot water". On the phone row
+the sentence covered the jar name (that CSS is fixed, commit `eefd188`), and
+the water was never on the shopping list.
+
 **The validator catches what the prompt only asks for.** Four guards in
 `schema.py`:
 
