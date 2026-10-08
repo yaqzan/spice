@@ -78,7 +78,7 @@ export function HistoryPage() {
   if (!rows.length) {
     return (
       <div className="page">
-        <h1>Cooked</h1>
+        <h1>Cookbook</h1>
         <p className="muted">Nothing yet. Every recipe you rate sharpens the next one.</p>
       </div>
     )
@@ -89,7 +89,7 @@ export function HistoryPage() {
 
   return (
     <div className="page history-page">
-      <h1>Cooked</h1>
+      <h1>Cookbook</h1>
       {authed && unrated > 0 && (
         <p className="muted small">
           {unrated} waiting on a rating — those are the ones doing nothing for you.

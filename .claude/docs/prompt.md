@@ -282,12 +282,15 @@ rating says 8 or 9 every time. `proven` / `well_trodden` / `adaptation` /
 answer. The card no longer shows it as a chip (2026-10-08: the label read as
 noise); `why_this` states the provenance in words instead.
 
-**`why_this` is a dish description, not a history note.** It sits under the
-title, so it says what the dish is first. Before 2026-10-08 it was "why this,
-now" and every repeat dish opened with "Your 10/10 from ..." instead of saying
-what was on the plate. No ratings, scores or dates in it (too coarse to act
-on); a past cook gets a few loose words at the end, only if it shaped the
-recipe. The dated-entries invariant applies to history, not this line. The card's top chips are total time, heat, cuisine (in that order) — the
+**A recipe is a cookbook entry, not a session reply.** History (ratings,
+rotation, notes) shapes the choices but is never mentioned in any field: no
+scores, dates, "your first X", "same as the 10/10", "now you X instead of Y"
+(`COOK_PROFILE`). Before 2026-10-08 the prompt invited it and the owner hated
+reading it back. `why_this` is the dish description under the title, ending
+with its provenance in words (classic / bent to fit the rack / untested).
+Saved recipes were scrubbed the same day (backup
+`data/backups/*-pre-scrub.db`); hand-logged dishes keep the owner's notes. The
+dated-entries invariant applies to the prompt's history, not the card. The card's top chips are total time, heat, cuisine (in that order) — the
 three things read at a glance. Blend rows and the "Not on the rack" list sort
 TBsp, then TEAsp, then the rest (within a bowl; bowls keep pan order), so one
 measurer is used at a time. The step's bowl reminder shows names only until

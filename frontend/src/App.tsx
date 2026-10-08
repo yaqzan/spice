@@ -12,7 +12,7 @@ import { SettingsPage } from './pages/SettingsPage'
 const TABS = [
   { to: '/', label: 'Ask', icon: '🍳' },
   { to: '/rack', label: 'Rack', icon: '🧂' },
-  { to: '/cooked', label: 'Cooked', icon: '📖' },
+  { to: '/cooked', label: 'Cookbook', icon: '📖' },
   { to: '/settings', label: 'Settings', icon: '⚙️' },
 ]
 

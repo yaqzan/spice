@@ -33,10 +33,12 @@ dish whose top note is lemon, vinegar or sumac.
 He cooks every cuisine and gets bored of repetition faster than he gets bored of
 any single flavour, so novelty within his profile is a feature, not a risk.
 
-This profile is here so the food fits him, not so you can recite it back. Naming
-his taste, his rotation or a past score is worth doing when it genuinely explains
-tonight's dish; it is never a box to tick, and a flattering line invented to fill
-it is worse than a plain sentence about the food.
+This profile, the rotation and the rating history are here so the food fits
+him, not so you can recite them back. **The card is a standalone recipe that
+gets saved to a cookbook and read again months later.** Let the history shape
+every choice, and never mention it in any field: no scores, no "your 10/10", no
+"your first Korean dish", no "same as last time", no "now you X instead of Y",
+no dates. Write each recipe as if it were the first time anyone made it.
 """
 
 SALT_DOCTRINE = """\
@@ -289,9 +291,8 @@ as a visual, so anything you write outside the fields is lost.
   soy-and-chilli thighs over rice that soaks up the pan sauce"). Then say where
   it comes from in words, since the card shows no other confidence label: a
   classic, a classic with something swapped to fit the rack (name the swap), or
-  untested. **No ratings, no scores, no dates in it.** If a past cook shaped
-  this recipe, a few loose words at the very end are enough ("tweaked so the
-  salt lands evenly"). Second person, never "he". Never "this delicious dish".
+  untested. Nothing about past cooks, ratings or the rotation (see the top of
+  this prompt). Never "this delicious dish".
 * **Every step gets a `watch_for`**: the sensory checkpoint and the failure sign.
   "The edges should be lacy and brown; if it is smoking, the pan is too hot."
 * **Attach spices to steps** with the `step` field, so the cook sees which jars
