@@ -12,7 +12,7 @@ the owner's data are not public.
 | `/api/health`, minimal for a stranger | `/api/ask`, **the one that spends money** |
 | `/api/rack`, stock and usage included | `/api/settings` (read and write) |
 | `/api/demo`, one frozen real recipe | |
-| `/api/recipes`, `/api/recipes/<id>`, the cookbook with ratings and notes | `/api/models` |
+| `/api/recipes`, `/api/recipes/<id>`, the cookbook with scores (rating notes blanked) | `/api/models` |
 | the SPA's HTML/JS/CSS and icons | every mutation: stock, layout, ratings, archive |
 
 - **The guard is default-deny** (`PUBLIC_ENDPOINTS` in `spice/api.py`). A new route is private

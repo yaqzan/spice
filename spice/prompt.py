@@ -286,13 +286,16 @@ as a visual, so anything you write outside the fields is lost.
 * **`confidence` is not a sales pitch.** `proven` means it is close to something
   already rated 7+. `experiment` is a perfectly good answer and is more useful
   than false certainty. Do not predict a score.
-* **`why_this` describes the dish.** It is the line under the title, so lead
-  with what this is: the flavours, the texture, how it comes together ("Glossy
-  soy-and-chilli thighs over rice that soaks up the pan sauce"). Then say where
-  it comes from in words, since the card shows no other confidence label: a
-  classic, a classic with something swapped to fit the rack (name the swap), or
-  untested. Nothing about past cooks, ratings or the rotation (see the top of
-  this prompt). Never "this delicious dish".
+* **`why_this` is the hook under the title, like a streaming-service blurb.**
+  Open with one true line of accolade or history for the dish ("Hawaii's
+  plate-lunch classic, with the heat turned up."): where it comes from, what it
+  is famous for, why people love it. Never invent an award, a date or a statistic;
+  if you are unsure of the history, say what the dish is known for instead. Then
+  one sentence on what this version is: the flavours, the texture, how it comes
+  together. If something was swapped to fit the rack, end with "A <cuisine>
+  classic, bent to fit the rack." Roughly 30 words. Nothing about past cooks,
+  ratings or the rotation (see the top of this prompt). Never "this delicious
+  dish".
 * **Every step gets a `watch_for`**: the sensory checkpoint and the failure sign.
   "The edges should be lacy and brown; if it is smoking, the pan is too hot."
 * **Attach spices to steps** with the `step` field, so the cook sees which jars

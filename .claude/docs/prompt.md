@@ -286,10 +286,13 @@ noise); `why_this` states the provenance in words instead.
 rotation, notes) shapes the choices but is never mentioned in any field: no
 scores, dates, "your first X", "same as the 10/10", "now you X instead of Y"
 (`COOK_PROFILE`). Before 2026-10-08 the prompt invited it and the owner hated
-reading it back. `why_this` is the dish description under the title, ending
-with its provenance in words (classic / bent to fit the rack / untested).
-Saved recipes were scrubbed the same day (backup
-`data/backups/*-pre-scrub.db`); hand-logged dishes keep the owner's notes. The
+reading it back. `why_this` is a streaming-style hook under the title: one
+true line of accolade or history, then what this version is, ending "bent to
+fit the rack" only when a swap was made. The cookbook is public, so it must
+never hold private notes. Saved recipes were scrubbed the same day (backup
+`data/backups/*-pre-scrub.db`) and every one was rewritten in the hook style
+on 2026-10-08 (old text: `data/backups/why_this-2026-10-08.json`). Rating
+notes are blanked by the API for non-tailnet callers. The
 dated-entries invariant applies to the prompt's history, not the card. The card's top chips are total time, heat, cuisine (in that order) — the
 three things read at a glance. Blend rows and the "Not on the rack" list sort
 TBsp, then TEAsp, then the rest (within a bowl; bowls keep pan order), so one

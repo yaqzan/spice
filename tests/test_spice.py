@@ -1079,6 +1079,19 @@ def test_the_shop_window_is_open(public, path):
     assert public.get(path).status_code == 200
 
 
+def test_rating_notes_stay_private(public):
+    recipe_id = db.save_recipe(schema.normalise(_payload()),
+                               {'query': 'x', 'model': 'test'})
+    db.rate(recipe_id, 9, notes='too private to print')
+    for caller in ({}, {'environ_base': PEER}):
+        listed = public.get('/api/recipes', **caller).get_json()['recipes'][0]
+        entry = public.get(f'/api/recipes/{recipe_id}', **caller).get_json()
+        shown = caller != {}
+        assert (listed['notes'] == 'too private to print') is shown
+        assert (entry['rating']['notes'] == 'too private to print') is shown
+        assert entry['rating']['overall'] == 9          # the score itself is public
+
+
 def test_a_cookbook_entry_is_readable_but_not_changeable(public):
     recipe_id = db.save_recipe(schema.normalise(_payload()),
                                {'query': 'x', 'model': 'test'})

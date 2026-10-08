@@ -230,13 +230,19 @@ def create_app():
         except (TypeError, ValueError):
             return jsonify({'error': 'limit must be a number'}), 400
         rated_only = request.args.get('rated') == '1'
-        return jsonify({'recipes': db.history(limit=limit, rated_only=rated_only)})
+        rows = db.history(limit=limit, rated_only=rated_only)
+        if not authed():
+            for row in rows:
+                row['notes'] = None      # rating notes are the owner's, scores are not
+        return jsonify({'recipes': rows})
 
     @app.get('/api/recipes/<int:recipe_id>')
     def get_recipe(recipe_id):
         row = db.recipe(recipe_id)
         if not row:
             return jsonify({'error': 'no such recipe'}), 404
+        if row['rating'] and not authed():
+            row['rating']['notes'] = ''
         factor = request.args.get('scale')
         if factor:
             try:
