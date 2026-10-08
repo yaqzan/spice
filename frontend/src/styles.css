@@ -193,7 +193,9 @@ textarea { resize: vertical; }
 .heat-dots i.on { background: var(--hot); }
 
 .times { font-size: 13px; color: var(--muted); }
-.times-total { color: var(--text); font-weight: 600; }
+.times-total { display: inline-block; margin-right: 8px; padding: 3px 10px; border-radius: 999px;
+               background: var(--accent-dim); border: 1px solid var(--accent);
+               color: var(--text); font-weight: 600; }
 .why { font-size: 15px; color: var(--text); opacity: 0.9; font-style: italic;
        border-left: 2px solid var(--accent-dim); padding-left: 12px; }
 
