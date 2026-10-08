@@ -46,13 +46,14 @@ RECIPE_SCHEMA = {
                                       'experiment = genuinely untested. Be honest; '
                                       '"experiment" is a useful answer, not a failure.'},
         'why_this': {'type': 'string',
-                     'description': 'One or two sentences addressed TO the cook, in the '
-                                    'second person: why this dish, now. Say what it is and '
-                                    'what makes it worth cooking tonight. A nod to the '
-                                    'rotation or a past rating is welcome when there is a '
-                                    'real one to point at, but it is not required and an '
-                                    'invented one is worse than none. Never write about '
-                                    'the cook in the third person.'},
+                     'description': 'One or two sentences describing the DISH, in the second '
+                                    'person: what it is, what it tastes like, its texture, '
+                                    'how it is built. Fold in where it comes from in plain '
+                                    'words (a classic; a classic with X swapped for the '
+                                    'rack; untested). A past rating or note gets at most a '
+                                    'short clause, and only when it changed this recipe - '
+                                    'never the lead. Never write about the cook in the '
+                                    'third person.'},
         'heat_level': {'type': 'integer', 'minimum': 1, 'maximum': 5},
         'pan': {'type': 'string',
                 'description': 'Which pan and why, e.g. "carbon steel wok - fast, very hot '

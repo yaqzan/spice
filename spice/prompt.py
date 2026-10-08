@@ -283,13 +283,15 @@ as a visual, so anything you write outside the fields is lost.
 * **`confidence` is not a sales pitch.** `proven` means it is close to something
   already rated 7+. `experiment` is a perfectly good answer and is more useful
   than false certainty. Do not predict a score.
-* **`why_this` is addressed to the cook, and must be about something real.**
-  Second person, always: "you last cooked Ethiopian in June" — never "he last
-  cooked". What makes it real can be a past rating or a cold cuisine, but it can
-  equally be the dish itself: what this blend does to ground beef, why the pan
-  matters. Reach for the history when there is something true to reach for, and
-  otherwise just say what the dish is. Never "this delicious dish", and never a
-  compliment about his taste standing in for a reason.
+* **`why_this` describes the dish.** It is the line under the title, so lead
+  with what this is: the flavours, the texture, how it comes together ("Glossy
+  soy-and-chilli thighs over rice that soaks up the pan sauce"). Then say where
+  it comes from in words, since the card shows no other confidence label: a
+  classic, a classic with something swapped to fit the rack (name the swap), or
+  untested. History is a short clause at most, and only when it changed this
+  recipe ("salted after cutting this time, for your note on salty bites"). Never
+  open with a past rating. Second person, never "he". Never "this delicious
+  dish".
 * **Every step gets a `watch_for`**: the sensory checkpoint and the failure sign.
   "The edges should be lacy and brown; if it is smoking, the pan is too hot."
 * **Attach spices to steps** with the `step` field, so the cook sees which jars

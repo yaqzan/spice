@@ -21,13 +21,6 @@ function heatLabel(step: Step): string {
   return HEAT_LABELS[step.heat] || step.heat
 }
 
-const CONFIDENCE_LABELS: Record<string, string> = {
-  proven: 'Close to something you rated well',
-  well_trodden: 'A classic combination',
-  adaptation: 'A classic, bent to fit the rack',
-  experiment: 'Genuinely untested',
-}
-
 function Chip({ children, tone }: { children: React.ReactNode; tone?: string }) {
   return <span className={`chip${tone ? ` chip-${tone}` : ''}`}>{children}</span>
 }
@@ -42,17 +35,13 @@ function HeatDots({ level }: { level: number }) {
   )
 }
 
+// The total sits in the chip row; this is the breakdown under it.
 function Times({ times }: { times: RecipePayload['times'] }) {
   const parts: string[] = []
   if (times.marinate_min) parts.push(`${fmt(times.marinate_min)} marinating`)
   if (times.prep_min) parts.push(`${fmt(times.prep_min)} prep`)
   if (times.cook_min) parts.push(`${fmt(times.cook_min)} cooking`)
-  return (
-    <p className="times">
-      {times.total_min ? <strong className="times-total">{fmt(times.total_min)}</strong> : null}
-      {parts.join(' · ')}
-    </p>
-  )
+  return parts.length ? <p className="times">{parts.join(' · ')}</p> : null
 }
 
 function fmt(minutes: number): string {
@@ -256,12 +245,12 @@ export function RecipeCard({ payload, rack, onRate, rated }: Props) {
     <article className="recipe">
       <header className="recipe-head">
         <h2>{payload.title}</h2>
+        {/* The three things read at a glance: what cuisine, how hot, how long.
+            Confidence is not a chip; `why_this` says it in words. */}
         <div className="recipe-chips">
           {payload.cuisine && <Chip tone="cuisine">{payload.cuisine}</Chip>}
           <Chip><HeatDots level={payload.heat_level} /></Chip>
-          <Chip tone={payload.confidence === 'experiment' ? 'warn' : 'calm'}>
-            {CONFIDENCE_LABELS[payload.confidence] || payload.confidence}
-          </Chip>
+          {payload.times.total_min > 0 && <Chip tone="time">{fmt(payload.times.total_min)}</Chip>}
         </div>
         <Times times={payload.times} />
         {payload.why_this && <p className="why">{payload.why_this}</p>}

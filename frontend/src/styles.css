@@ -197,7 +197,8 @@ textarea { resize: vertical; }
         border: 1px solid var(--line); display: inline-flex; align-items: center; }
 .chip-cuisine { color: var(--accent); border-color: var(--accent-dim); }
 .chip-warn { color: var(--warn); border-color: var(--warn); }
-.chip-calm { color: var(--good); border-color: #3f5a2c; }
+.chip-time { background: var(--accent-dim); border-color: var(--accent);
+             color: var(--text); font-weight: 600; }
 .chip-heat { color: var(--hot); border-color: #6b2a1a; }
 
 .heat-dots { display: inline-flex; gap: 3px; }
@@ -206,9 +207,6 @@ textarea { resize: vertical; }
 .heat-dots i.on { background: var(--hot); }
 
 .times { font-size: 13px; color: var(--muted); }
-.times-total { display: inline-block; margin-right: 8px; padding: 3px 10px; border-radius: 999px;
-               background: var(--accent-dim); border: 1px solid var(--accent);
-               color: var(--text); font-weight: 600; }
 .why { font-size: 15px; color: var(--text); opacity: 0.9; font-style: italic;
        border-left: 2px solid var(--accent-dim); padding-left: 12px; }
 
