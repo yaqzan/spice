@@ -44,7 +44,7 @@ function Times({ times }: { times: RecipePayload['times'] }) {
   if (times.cook_min) parts.push(`${fmt(times.cook_min)} cooking`)
   return (
     <p className="times">
-      {times.total_min ? <strong className="times-total">{fmt(times.total_min)} all in</strong> : null}
+      {times.total_min ? <strong className="times-total">{fmt(times.total_min)}</strong> : null}
       {times.total_min && parts.length ? ' — ' : ''}
       {parts.join(' · ')}
     </p>
