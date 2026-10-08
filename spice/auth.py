@@ -7,8 +7,8 @@ That is a deliberate narrowing. There used to be a shared code as well, typed
 into an unlock sheet on first visit. But a code means the public hostname has a
 door in it, and a door needs a lock, and a lock needs a screen, and the screen
 needs copy explaining why it is there. Deleting the door deleted all four. What
-remains on the public tunnel is a read-only exhibit — the rack drawing and one
-frozen example recipe — and there is nothing on it to guess your way past.
+remains on the public tunnel is read-only — the rack drawing, one frozen example
+recipe and the cookbook — and there is nothing on it to guess your way past.
 
 `X-Forwarded-For` is never consulted and must never be. This app is reachable
 through a public Cloudflare tunnel at the same moment it is reachable on the

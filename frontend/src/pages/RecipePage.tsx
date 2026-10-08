@@ -1,12 +1,14 @@
 import { useEffect, useState } from 'react'
 import { useParams } from 'react-router-dom'
 import { api } from '../api'
+import { useAccess } from '../access'
 import { RecipeCard } from '../components/RecipeCard'
 import { RatingSheet } from '../components/RatingSheet'
 import type { RackView, Recipe } from '../types'
 
 export function RecipePage() {
   const { id } = useParams()
+  const { authed } = useAccess()
   const [recipe, setRecipe] = useState<Recipe | null>(null)
   const [rack, setRack] = useState<RackView | null>(null)
   const [rating, setRating] = useState(false)
@@ -24,11 +26,12 @@ export function RecipePage() {
   return (
     <div className="page recipe-page">
       <RecipeCard payload={recipe.payload} rack={rack}
-                  rated={!!recipe.rating} onRate={() => setRating(true)} />
+                  rated={!!recipe.rating}
+                  onRate={authed ? () => setRating(true) : undefined} />
 
       {recipe.rating && (
         <p className="rated-note">
-          You gave this {recipe.rating.overall}/10
+          {authed ? 'You gave this' : 'Rated'} {recipe.rating.overall}/10
           {recipe.rating.notes ? ` — “${recipe.rating.notes}”` : ''}
         </p>
       )}

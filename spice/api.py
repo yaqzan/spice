@@ -8,6 +8,7 @@ straight to that recipe.
 
 from __future__ import annotations
 
+import re
 import threading
 
 from flask import Flask, jsonify, request, send_from_directory
@@ -21,10 +22,11 @@ VERSION = '1.0.0'
 # a route defaults to closed and a mistake here is a deliberate act rather than an
 # oversight.
 #
-# The app doubles as a portfolio piece, so the rack visual and a worked example
-# are meant to be seen. Everything else -- the spend (`/api/ask`), the owner's
-# cooking history and ratings, his settings, and every mutation -- needs a tailnet
-# peer address, and there is no second way to get one.
+# The app doubles as a portfolio piece, so the rack visual, a worked example and
+# the cookbook (every saved recipe, its rating and notes) are meant to be seen.
+# Everything else -- the spend (`/api/ask`), the settings, and every mutation --
+# needs a tailnet peer address, and there is no second way to get one. Reading is
+# public; changing anything, or spending anything, is not.
 #
 # `/api/health` is on the list by necessity too -- server.ps1's watchdog polls it
 # through the public hostname -- and it is written to leak nothing beyond "there
@@ -33,7 +35,11 @@ PUBLIC_ENDPOINTS = frozenset({
     '/api/health',
     '/api/rack',            # the showpiece; redacted for anonymous callers
     '/api/demo',            # a frozen example recipe, costs nothing to serve
+    '/api/recipes',         # the cookbook, read-only
 })
+# `/api/recipes/<id>` -- one cookbook entry. GET only, like the rest of the list;
+# the `/rate` and `/archive` sub-routes do not match and stay private.
+PUBLIC_RECIPE = re.compile(r'^/api/recipes/\d+$')
 
 
 def create_app():
@@ -66,14 +72,15 @@ def create_app():
         path = request.path.lower().rstrip('/') or '/'
         if not path.startswith('/api/'):
             return None
-        if request.method == 'GET' and path in PUBLIC_ENDPOINTS:
+        if request.method == 'GET' and (path in PUBLIC_ENDPOINTS
+                                        or PUBLIC_RECIPE.match(path)):
             return None
         if authed():
             return None
         # No `gated` flag and nothing to retry with: there is no code to supply,
         # so the client has nothing to do about this except stop asking.
-        return jsonify({'error': 'This is the owner\'s, and only reachable '
-                                 'from his tailnet.'}), 401
+        return jsonify({'error': 'Changing things and asking for new recipes is '
+                                 'the owner\'s, from his tailnet.'}), 401
 
     # ── health ───────────────────────────────────────────────────────────────
 

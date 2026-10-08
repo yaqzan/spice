@@ -1073,9 +1073,20 @@ def public(monkeypatch):
     return app.test_client()
 
 
-@pytest.mark.parametrize('path', ['/api/health', '/api/rack', '/api/demo'])
+@pytest.mark.parametrize('path', ['/api/health', '/api/rack', '/api/demo',
+                                  '/api/recipes'])
 def test_the_shop_window_is_open(public, path):
     assert public.get(path).status_code == 200
+
+
+def test_a_cookbook_entry_is_readable_but_not_changeable(public):
+    recipe_id = db.save_recipe(schema.normalise(_payload()),
+                               {'query': 'x', 'model': 'test'})
+    assert public.get(f'/api/recipes/{recipe_id}').status_code == 200
+    # Reading is public; rating, archiving and asking stay with the tailnet.
+    assert public.post(f'/api/recipes/{recipe_id}/rate',
+                       json={'overall': 9}).status_code == 401
+    assert public.post(f'/api/recipes/{recipe_id}/archive').status_code == 401
 
 
 def test_health_tells_the_frontend_which_app_to_draw(public):
@@ -1105,8 +1116,6 @@ def test_the_tailnet_address_is_never_handed_out(public):
     ('post', '/api/ask'),                 # the one that spends money
     ('get', '/api/settings'),
     ('post', '/api/settings'),
-    ('get', '/api/recipes'),
-    ('get', '/api/recipes/1'),
     ('get', '/api/models'),
     ('get', '/api/rack/proposal'),
     ('post', '/api/rack/state'),
@@ -1117,7 +1126,8 @@ def test_everything_else_is_shut(public, method, path):
 
 
 @pytest.mark.parametrize('path', [
-    '/api/recipes/', '/API/recipes', '/api/RECIPES', '/api/settings/',
+    '/api/settings/', '/API/settings', '/api/SETTINGS', '/api/models/',
+    '/api/recipes/1/rate', '/api/recipes/1/archive',
 ])
 def test_near_miss_paths_do_not_slip_past_the_guard(public, path):
     # Flask's router is case-sensitive and would 404 most of these, but the guard
@@ -1128,7 +1138,7 @@ def test_near_miss_paths_do_not_slip_past_the_guard(public, path):
 
 @pytest.mark.parametrize('method', ['head', 'options'])
 def test_non_get_verbs_cannot_read_private_routes(public, method):
-    assert getattr(public, method)('/api/recipes').status_code != 200
+    assert getattr(public, method)('/api/settings').status_code != 200
 
 
 def test_anonymous_health_says_nothing_useful(public):

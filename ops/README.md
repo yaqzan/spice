@@ -11,9 +11,9 @@ the owner's data are not public.
 |---|---|
 | `/api/health`, minimal for a stranger | `/api/ask`, **the one that spends money** |
 | `/api/rack`, redacted | `/api/settings` (read and write) |
-| `/api/demo`, one frozen real recipe | `/api/recipes`, `/api/recipes/<id>` |
-| the SPA's HTML/JS/CSS and icons | `/api/models` |
-| | every mutation: stock, layout, ratings |
+| `/api/demo`, one frozen real recipe | |
+| `/api/recipes`, `/api/recipes/<id>`, the cookbook with ratings and notes | `/api/models` |
+| the SPA's HTML/JS/CSS and icons | every mutation: stock, layout, ratings, archive |
 
 - **The guard is default-deny** (`PUBLIC_ENDPOINTS` in `spice/api.py`). A new route is private
   unless added to that list, so forgetting gives a 401, not a leak.

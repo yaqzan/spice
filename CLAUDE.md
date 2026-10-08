@@ -5,8 +5,9 @@
 **Spice** answers "what do I do with pork belly" with a picture of the real rack, the right jars
 lit up and numbered in pan order. Phone-first.
 
-- Live at **https://spice.yaqzan.dev**, public on purpose. Anyone gets the rack and a frozen demo
-  recipe; the rest needs a **tailnet peer** (URL printed by `serve`). No access code (removed).
+- Live at **https://spice.yaqzan.dev**, public on purpose. Anyone can read the rack, the demo and the
+  cookbook (`/api/recipes`, GET only); asking (the spend), settings and every write need a **tailnet
+  peer** (URL printed by `serve`). No access code (removed).
 - **Public repo (github.com/yaqzan/spice), plug and play.** Owner state is gitignored: `data/`
   (DB + key), `.env` (`SPICE_PUBLIC_ORIGIN`, `SPICE_TODO_FILE`), `ops/cloudflared-config.yml`,
   `ops/Caddyfile` (`.example` copies tracked). No machine path, domain, tailnet name/IP or tunnel
