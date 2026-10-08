@@ -51,6 +51,21 @@ function fmt(minutes: number): string {
   return rest ? `${hours}h ${rest}m` : `${hours}h`
 }
 
+/** Tablespoons first, then teaspoons, then everything else (stable), so one
+ *  measurer is picked up once and put down before the next. Applies within a
+ *  bowl: the bowls themselves stay in pan order. */
+function byMeasure<T>(rows: T[], amountOf: (row: T) => string): T[] {
+  const rank = (row: T) => {
+    const amount = amountOf(row) || ''
+    if (/\bTBsp\b/i.test(amount)) return 0
+    if (/\b(TEAsp|tsp)\b/i.test(amount)) return 1
+    return 2
+  }
+  return rows.map((row, i) => ({ row, i }))
+    .sort((a, b) => rank(a.row) - rank(b.row) || a.i - b.i)
+    .map(({ row }) => row)
+}
+
 function BlendRow({ item }: { item: BlendItem }) {
   const [open, setOpen] = useState(false)
   return (
@@ -160,6 +175,23 @@ function stampPlan(payload: RecipePayload) {
   })
 }
 
+function StepBowl({ bowl }: { bowl: BlendGroup }) {
+  const [open, setOpen] = useState(false)
+  return (
+    <li className={open ? 'open' : ''} onClick={() => setOpen((v) => !v)}>
+      <span className="bowl-n">{bowl.bowl}</span>
+      <span className="step-bowl-items">
+        {bowl.items.map((item) => (
+          <span key={item.spice_key} className="step-bowl-item">
+            <i style={{ background: item.color }} />{item.name}
+            {open && <b className="step-bowl-amount"><Amount>{item.amount}</Amount></b>}
+          </span>
+        ))}
+      </span>
+    </li>
+  )
+}
+
 function StepRow({ step, groups, stamps, allow }: {
   step: Step
   groups: BlendGroup[]
@@ -184,24 +216,11 @@ function StepRow({ step, groups, stamps, allow }: {
                   bowls={numbers} renumber={renumber} />
       </p>
       {bowls.length > 0 && (
-        // What is in the bowls this step names — and only what, never how much.
-        // The measurements live in the blend section, where they were measured
-        // out before the stove was lit; repeating them here would invite a
-        // second pour mid-cook. This is a reminder, not an instruction, so it
-        // sits with the other small print rather than in the step's own voice.
+        // What is in the bowls this step names. Names only until pressed: the
+        // measurements were taken out in the blend section before the stove was
+        // lit, so they stay one tap away rather than inviting a second pour.
         <ul className="step-bowls">
-          {bowls.map((bowl) => (
-            <li key={bowl.bowl}>
-              <span className="bowl-n">{bowl.bowl}</span>
-              <span className="step-bowl-items">
-                {bowl.items.map((item) => (
-                  <span key={item.spice_key} className="step-bowl-item">
-                    <i style={{ background: item.color }} />{item.name}
-                  </span>
-                ))}
-              </span>
-            </li>
-          ))}
+          {bowls.map((bowl) => <StepBowl key={bowl.bowl} bowl={bowl} />)}
         </ul>
       )}
       {step.watch_for && <p className="step-watch"><span>Watch for</span> {step.watch_for}</p>}
@@ -245,12 +264,12 @@ export function RecipeCard({ payload, rack, onRate, rated }: Props) {
     <article className="recipe">
       <header className="recipe-head">
         <h2>{payload.title}</h2>
-        {/* The three things read at a glance: what cuisine, how hot, how long.
+        {/* The three things read at a glance: how long, how hot, what cuisine.
             Confidence is not a chip; `why_this` says it in words. */}
         <div className="recipe-chips">
-          {payload.cuisine && <Chip tone="cuisine">{payload.cuisine}</Chip>}
-          <Chip><HeatDots level={payload.heat_level} /></Chip>
           {payload.times.total_min > 0 && <Chip tone="time">{fmt(payload.times.total_min)}</Chip>}
+          <Chip><HeatDots level={payload.heat_level} /></Chip>
+          {payload.cuisine && <Chip tone="cuisine">{payload.cuisine}</Chip>}
         </div>
         <Times times={payload.times} />
         {payload.why_this && <p className="why">{payload.why_this}</p>}
@@ -307,7 +326,8 @@ export function RecipeCard({ payload, rack, onRate, rated }: Props) {
               </span>
             </div>
             <ul className="blend">
-              {group.items.map((item) => <BlendRow key={item.spice_key} item={item} />)}
+              {byMeasure(group.items, (item) => item.amount)
+                .map((item) => <BlendRow key={item.spice_key} item={item} />)}
             </ul>
             {group.keep_apart && (
               <p className="bowl-apart">{group.keep_apart}</p>
@@ -324,7 +344,7 @@ export function RecipeCard({ payload, rack, onRate, rated }: Props) {
         <section className="panel">
           <h3>Not on the rack</h3>
           <ul className="kitchen">
-            {payload.from_kitchen.map((k, i) => (
+            {byMeasure(payload.from_kitchen, (k) => k.amount).map((k, i) => (
               <li key={i} className={k.off_rack ? 'off-rack' : ''}>
                 <span>{k.item}</span><b><Amount>{k.amount}</Amount></b>
               </li>

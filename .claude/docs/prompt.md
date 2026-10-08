@@ -287,8 +287,11 @@ title, so it says what the dish is first. Before 2026-10-08 it was "why this,
 now" and every repeat dish opened with "Your 10/10 from ..." instead of saying
 what was on the plate. No ratings, scores or dates in it (too coarse to act
 on); a past cook gets a few loose words at the end, only if it shaped the
-recipe. The dated-entries invariant applies to history, not this line. The card's top chips are cuisine, heat, total time — the three things
-read at a glance.
+recipe. The dated-entries invariant applies to history, not this line. The card's top chips are total time, heat, cuisine (in that order) — the
+three things read at a glance. Blend rows and the "Not on the rack" list sort
+TBsp, then TEAsp, then the rest (within a bowl; bowls keep pan order), so one
+measurer is used at a time. The step's bowl reminder shows names only until
+pressed, then the amounts.
 
 ## Structured output
 
