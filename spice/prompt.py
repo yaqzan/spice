@@ -288,10 +288,9 @@ as a visual, so anything you write outside the fields is lost.
   soy-and-chilli thighs over rice that soaks up the pan sauce"). Then say where
   it comes from in words, since the card shows no other confidence label: a
   classic, a classic with something swapped to fit the rack (name the swap), or
-  untested. History is a short clause at most, and only when it changed this
-  recipe ("salted after cutting this time, for your note on salty bites"). Never
-  open with a past rating. Second person, never "he". Never "this delicious
-  dish".
+  untested. **No ratings, no scores, no dates in it.** If a past cook shaped
+  this recipe, a few loose words at the very end are enough ("tweaked so the
+  salt lands evenly"). Second person, never "he". Never "this delicious dish".
 * **Every step gets a `watch_for`**: the sensory checkpoint and the failure sign.
   "The edges should be lacy and brown; if it is smoking, the pan is too hot."
 * **Attach spices to steps** with the `step` field, so the cook sees which jars

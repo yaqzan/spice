@@ -50,10 +50,10 @@ RECIPE_SCHEMA = {
                                     'person: what it is, what it tastes like, its texture, '
                                     'how it is built. Fold in where it comes from in plain '
                                     'words (a classic; a classic with X swapped for the '
-                                    'rack; untested). A past rating or note gets at most a '
-                                    'short clause, and only when it changed this recipe - '
-                                    'never the lead. Never write about the cook in the '
-                                    'third person.'},
+                                    'rack; untested). No ratings, scores or dates. If a past '
+                                    'cook shaped it, a few loose words at the very end, '
+                                    'e.g. "tweaked so the salt lands evenly". Never write '
+                                    'about the cook in the third person.'},
         'heat_level': {'type': 'integer', 'minimum': 1, 'maximum': 5},
         'pan': {'type': 'string',
                 'description': 'Which pan and why, e.g. "carbon steel wok - fast, very hot '

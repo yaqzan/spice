@@ -285,8 +285,9 @@ noise); `why_this` states the provenance in words instead.
 **`why_this` is a dish description, not a history note.** It sits under the
 title, so it says what the dish is first. Before 2026-10-08 it was "why this,
 now" and every repeat dish opened with "Your 10/10 from ..." instead of saying
-what was on the plate. Past ratings are a clause, only when they changed the
-recipe. The card's top chips are cuisine, heat, total time — the three things
+what was on the plate. No ratings, scores or dates in it (too coarse to act
+on); a past cook gets a few loose words at the end, only if it shaped the
+recipe. The dated-entries invariant applies to history, not this line. The card's top chips are cuisine, heat, total time — the three things
 read at a glance.
 
 ## Structured output
