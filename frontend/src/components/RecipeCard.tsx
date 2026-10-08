@@ -286,7 +286,7 @@ export function RecipeCard({ payload, rack, onRate, rated }: Props) {
         {rack ? (
           <>
             <FullRack jars={rack.jars} racks={rack.racks}
-                      rackLabels={rack.rack_labels} highlights={highlights}
+                      rackLabels={rack.rack_labels} wallRacks={rack.wall_racks} highlights={highlights}
                       onTap={setTapped} selected={tapped?.spice_key ?? null} />
             {tapped && (
               <p className="jar-tip">

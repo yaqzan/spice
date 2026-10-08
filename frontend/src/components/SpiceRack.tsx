@@ -34,7 +34,14 @@ const PAD_TOP = 16
 // and using the global figure there is what left a quarter of the third column
 // permanently empty: the stove drew at 5/7 of a column sized for seven jars, and
 // the leftover looked like a hole in the page rather than a short shelf.
-const shelfWidth = (cols: number) => PAD_X * 2 + cols * JAR_W + (cols - 1) * GAP_X
+//
+// The smaller shelves (stove, fridge, freezer) do not carry row numbers, so they
+// need only a little side padding. That is what lets a 3-wide and a 4-wide shelf
+// sit side by side inside the width of one 7-wide wall rack, at the same jar size.
+const PAD_SMALL = 11
+const padOf = (wall: boolean) => (wall ? PAD_X : PAD_SMALL)
+const shelfWidth = (cols: number, wall = true) =>
+  padOf(wall) * 2 + cols * JAR_W + (cols - 1) * GAP_X
 
 /** How many jars wide a given shelf is. One definition, used to draw it and to
  *  size the column it sits in. */
@@ -49,6 +56,8 @@ type Props = {
   jars: Jar[]
   rackName: string
   label: string
+  /** A wall rack: frequency rows, numbered, with room at the left for the numbers. */
+  wall?: boolean
   highlights?: Record<string, Highlight>
   /** Kitchen-wide unique stacked abbreviations, keyed by spice_key. */
   codes: Record<string, string[]>
@@ -258,7 +267,7 @@ function assignLabels(jars: Jar[]): Record<string, string[]> {
 }
 
 export function SpiceRack({
-  jars, rackName, label, highlights, onTap, selected, codes, reference,
+  jars, rackName, label, wall = true, highlights, onTap, selected, codes, reference,
   style,
 }: Props) {
   const mine = useMemo(
@@ -276,7 +285,8 @@ export function SpiceRack({
   const hitCells = new Set(
     mine.filter((j) => highlights?.[j.spice_key]).map((j) => `${j.row}:${j.col}`))
   const rowHeight = JAR_H + GAP_Y
-  const width = shelfWidth(cols)
+  const pad = padOf(wall)
+  const width = shelfWidth(cols, wall)
   const dimming = !!highlights && Object.keys(highlights).length > 0
   // Room under the final row only when something down there needs a caption.
   const tail = dimming ? GAP_Y : 10
@@ -289,7 +299,8 @@ export function SpiceRack({
   const height = padTop + (rows - 1) * rowHeight + JAR_H + (compact ? 6 : tail)
 
   return (
-    <figure className={`rack${compact ? ' rack-compact' : ''}`} style={style}>
+    <figure className={`rack${compact ? ' rack-compact' : ''}${wall ? '' : ' rack-small'}`}
+            style={style}>
       <figcaption className="rack-label">{label}</figcaption>
       <svg viewBox={`0 0 ${width} ${height}`}
            className="rack-svg"
@@ -303,12 +314,14 @@ export function SpiceRack({
               {/* The plank the jars stand on — it is what makes the picture read
                   as a shelf at a glance rather than as a grid of swatches. Two
                   tones: a lit top surface and a shadowed front edge. */}
-              <rect x={PAD_X - 6} y={y + JAR_H} width={width - PAD_X * 2 + 12} height={2}
+              <rect x={pad - 6} y={y + JAR_H} width={width - pad * 2 + 12} height={2}
                     rx={1} className="rack-shelf-top" />
-              <rect x={PAD_X - 6} y={y + JAR_H + 2} width={width - PAD_X * 2 + 12} height={3}
+              <rect x={pad - 6} y={y + JAR_H + 2} width={width - pad * 2 + 12} height={3}
                     rx={1} className="rack-shelf-face" />
-              <text x={PAD_X - 10} y={y + JAR_H / 2 + 4} className="rack-row-number"
-                    textAnchor="end">{row + 1}</text>
+              {wall && (
+                <text x={pad - 10} y={y + JAR_H / 2 + 4} className="rack-row-number"
+                      textAnchor="end">{row + 1}</text>
+              )}
               {/* No frequency letter. "Regular" and "Rare" both rendered as R,
                   so the tag column said D / W / R / R — two rows labelled
                   identically, which is worse than leaving it to the numbers. */}
@@ -319,7 +332,7 @@ export function SpiceRack({
         {mine.map((jar) => {
           const hit = highlights?.[jar.spice_key]
           const dim = dimming && !hit
-          const x = PAD_X + jar.col * (JAR_W + GAP_X)
+          const x = pad + jar.col * (JAR_W + GAP_X)
           const y = padTop + jar.row * rowHeight
           const isSelected = selected === jar.spice_key
           return (
@@ -432,90 +445,86 @@ export function SpiceRack({
 }
 
 /**
- * How the shelves are grouped into columns on a wide screen, as they hang on the
- * wall: the two tall wall racks get a column each, and everything shorter stacks
- * in a third beside them.
+ * Every shelf in the kitchen.
  *
- * This is the one place that says so. It used to be four `nth-child` rules in a
- * media query, which meant a rack losing all its jars renumbered the rest and
- * silently moved them to the wrong cell.
+ * The wall racks keep a full-width row each. Everything smaller (stove, fridge,
+ * freezer) is packed Tetris-style into one block beside or below them: two
+ * columns, each new shelf dropped into whichever column is currently shorter, so
+ * a 3-wide stove (5 rows) sits next to a 4-wide fridge (4 rows) with the one-jar
+ * freezer filling the gap under it. The block is exactly one wall rack wide, and
+ * every shelf in it is drawn at the same scale as the wall racks, so a jar is the
+ * same size everywhere. On a wide screen the block is simply the third column.
  */
-function columnsOf(racks: string[]): string[][] {
-  if (racks.length <= 3) return racks.map((name) => [name])
-  return [[racks[0]], [racks[1]], racks.slice(2)]
-}
-
-/**
- * Which grid cell a shelf occupies.
- *
- * A column holding one rack spans the full height, because a four-row wall rack
- * IS the height of the row. A column holding several stacks them, and the last
- * row absorbs the slack — which is the whole reason the freezer lives in the
- * dead space under the stove rather than hanging below everything else.
- */
-function cellOf(columns: string[][], name: string): React.CSSProperties {
-  for (let i = 0; i < columns.length; i += 1) {
-    const row = columns[i].indexOf(name)
-    if (row === -1) continue
-    return {
-      gridColumn: i + 1,
-      gridRow: columns[i].length === 1 ? '1 / -1' : row + 1,
-    }
-  }
-  return {}
-}
-
-/** Every shelf in the kitchen, in the order they hang. */
-export function FullRack(props: Omit<Props, 'rackName' | 'label' | 'codes' | 'reference'> & {
+export function FullRack(props: Omit<Props, 'rackName' | 'label' | 'codes' | 'reference' | 'wall'> & {
   rackLabels: Record<string, string>
   racks: string[]
+  /** Which shelves are the numbered wall racks. Everything else is packed. */
+  wallRacks?: string[]
 }) {
-  const { racks, rackLabels, ...rest } = props
+  const { racks, rackLabels, wallRacks, ...rest } = props
   const wide = useIsWide()
   // Computed once over every jar, so codes are unique across shelves rather than
   // only within one.
   const codes = useMemo(() => assignLabels(rest.jars), [rest.jars])
 
-  const { present, columns, template, rowTemplate, references } = useMemo(() => {
-    const width: Record<string, number> = {}
-    for (const name of racks) width[name] = shelfWidth(shelfCols(rest.jars, name))
-    // An empty rack draws nothing, so it must not claim a column either.
-    const present = racks.filter((name) => width[name] > PAD_X * 2)
-    const columns = columnsOf(present)
-    const columnWidth = (column: string[]) => Math.max(...column.map((n) => width[n]))
+  const plan = useMemo(() => {
+    const wallSet = new Set(wallRacks ?? ['left', 'right'])
+    // An empty rack draws nothing, so it must not claim space either.
+    const present = racks.filter((name) => shelfCols(rest.jars, name) > 0)
+    const walls = present.filter((name) => wallSet.has(name))
+    const smalls = present.filter((name) => !wallSet.has(name))
 
-    // The rule that keeps a jar the same size everywhere: cap each shelf against
-    // the widest shelf it shares a column with. On a phone that column is the
-    // whole page, so the reference is the widest shelf in the kitchen; on a wide
-    // screen each grid column is sized in proportion to its own widest shelf,
-    // which then fills it exactly and leaves no gap to explain.
-    const references: Record<string, number> = {}
-    for (const column of wide ? columns : [present]) {
-      const reference = columnWidth(column) || 1
-      for (const name of column) references[name] = reference
+    const rowsOf = (name: string) =>
+      Math.max(...rest.jars.filter((j) => j.rack === name).map((j) => j.row)) + 1
+    const widthOf = (name: string) => shelfWidth(shelfCols(rest.jars, name), wallSet.has(name))
+
+    // Greedy drop into the shorter column. A one-row shelf is a footnote and
+    // weighs less than a row of a full shelf.
+    const packed: string[][] = [[], []]
+    const filled = [0, 0]
+    for (const name of smalls) {
+      const rows = rowsOf(name)
+      const weight = rows === 1 ? 0.6 : rows
+      const at = filled[1] < filled[0] ? 1 : 0
+      packed[at].push(name)
+      filled[at] += weight
     }
+    const columns = packed.filter((column) => column.length > 0)
+    const columnWidths = columns.map((column) => Math.max(...column.map(widthOf)))
+    const blockWidth = columnWidths.reduce((sum, w) => sum + w, 0)
 
-    // fr units, so the columns keep their proportions at any window width and a
-    // jar renders identically in all three. Ignored on a phone, where the stack
-    // is a flex column.
-    const template = columns.map((column) => `${columnWidth(column)}fr`).join(' ')
-    // Every stacked row is as tall as its shelf; the last one takes what is
-    // left, so a short column ends level with the tall ones beside it.
-    const deepest = Math.max(...columns.map((column) => column.length), 1)
-    const rowTemplate = deepest > 1
-      ? `repeat(${deepest - 1}, min-content) 1fr`
-      : '1fr'
-    return { present, columns, template, rowTemplate, references }
-  }, [racks, rest.jars, wide])
+    const widest = Math.max(blockWidth, ...walls.map(widthOf), 1)
+    const references: Record<string, number> = {}
+    for (const name of walls) references[name] = wide ? widthOf(name) : widest
+    columns.forEach((column, i) => column.forEach((name) => { references[name] = columnWidths[i] }))
+
+    const template = [...walls.map(widthOf), ...(columns.length ? [blockWidth] : [])]
+      .map((w) => `${w}fr`).join(' ')
+    return { walls, columns, columnWidths, blockWidth, widest, references, template }
+  }, [racks, wallRacks, rest.jars, wide])
+
+  const { walls, columns, columnWidths, blockWidth, widest, references, template } = plan
+  const draw = (name: string, wall: boolean) => (
+    <SpiceRack key={name} rackName={name} label={rackLabels[name] || name} wall={wall}
+               codes={codes} reference={references[name]} {...rest} />
+  )
 
   return (
-    <div className="rack-stack"
-         style={{ gridTemplateColumns: template, gridTemplateRows: rowTemplate }}>
-      {present.map((name) => (
-        <SpiceRack key={name} rackName={name} label={rackLabels[name] || name}
-                   codes={codes} reference={references[name]}
-                   style={cellOf(columns, name)} {...rest} />
-      ))}
+    <div className="rack-stack" style={wide ? { gridTemplateColumns: template } : undefined}>
+      {walls.map((name) => draw(name, true))}
+      {columns.length > 0 && (
+        <div className="rack-pack"
+             style={{
+               gridTemplateColumns: columnWidths.map((w) => `${w}fr`).join(' '),
+               maxWidth: wide ? undefined : `${(blockWidth / widest) * 100}%`,
+             }}>
+          {columns.map((column, i) => (
+            <div key={i} className="rack-pack-col">
+              {column.map((name) => draw(name, false))}
+            </div>
+          ))}
+        </div>
+      )}
     </div>
   )
 }

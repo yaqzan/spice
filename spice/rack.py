@@ -506,11 +506,29 @@ STOVE: tuple = (
           'In whole at the start of anything wet, out before serving. Its job is '
           'a background note you only notice when it is missing, and nothing else '
           'in this kitchen does that job. Two leaves for a pot; more turns soapy.'),
+    # GRANULES, not a bottled concentrate, and the salt figure is per tablespoon
+    # of the powder — which is an enormous dose nobody would ever use. That is the
+    # point: a rounded teaspoon eyeballed into half a cup of water is four times
+    # the stock it should be and a gram and a half of unaccounted salt.
+    Spice('dashi', 'Hondashi', ('dashi', 'bonito dashi', 'bonito soup stock',
+                                'katsuo dashi', 'japanese soup stock', 'dashi granules',
+                                'instant dashi'),
+          'ingredient', 'early', False, 0, '#c2a066',
+          'Instant bonito stock in granule form. Make it up first — about 1 TEAsp '
+          'to 2 cups of hot water for drinking-strength stock, so half a cup takes '
+          'a scant 1/4 TEAsp — and MEASURE it rather than shaking the jar over the '
+          'pan, because the powder is roughly a third salt and it is the easiest '
+          'thing here to quadruple by accident. It already contains MSG and sugar, '
+          'so a dish using it does not want MSG on top. Use it wherever a recipe '
+          'would otherwise get plain water. The one thing on this shelf that must '
+          'NOT go in the fridge: it is a powder, and condensation turns it to a '
+          'brick. Sealed, cool, dry.',
+          3.4),
 )
 
 
-# ── the sauce shelf ──────────────────────────────────────────────────────────
-# Bottles and tubs rather than jars, and the reason they are here rather than in
+# ── the fridge ───────────────────────────────────────────────────────────────
+# Sauces, pastes and anything else that lives cold. Bottles and tubs rather than jars, and the reason they are here rather than in
 # a list somewhere is the reason everything else is here: a seasoning the app
 # cannot see is a seasoning the model will not use, and one it cannot weigh is a
 # seasoning that quietly wrecks the salt.
@@ -521,9 +539,12 @@ STOVE: tuple = (
 # that: the prompt prints the figure beside the jar and the model subtracts it,
 # the same way it already subtracts the salt inside a Cajun blend.
 #
+# Instant dashi is NOT here: it is a powder, and condensation turns it to a
+# brick, so it lives above the stove.
+#
 # Not re-sorted by usage. These are grouped by what they are, because that is how
 # a hand finds a bottle it has picked up a hundred times.
-SAUCES: tuple = (
+FRIDGE: tuple = (
     # An unqualified "soy sauce" means this one -- that is what a recipe writer
     # means by the words, and dark soy has to be asked for by name. Same rule
     # that keeps the bulk pepper from losing "black pepper" to the Zanzibar jar.
@@ -549,9 +570,12 @@ SAUCES: tuple = (
           'same as its lighter sibling.',
           2.0),
     Spice('oyster_sauce', 'Oyster Sauce', ('oyster flavoured sauce', 'oyster flavored sauce',
-                                           'stir fry sauce'),
+                                           'stir fry sauce', 'panda oyster sauce',
+                                           'panda brand oyster flavored sauce'),
           'sauce', 'mid', False, 0, '#3d2410',
-          'The fastest route to a stir-fry that tastes like a restaurant, and the '
+          'Panda Brand oyster-FLAVORED sauce: thinner and saltier than a true '
+          'oyster sauce, with less sweetness to balance it. The fastest route to a '
+          'stir-fry that tastes like a restaurant, and the '
           'fastest route to over-salting one: about 1.4g of salt a tablespoon, on '
           'top of sugar and starch that tighten a sauce as it reduces. In near the '
           'end, off a high flame, and expect the sauce to thicken after it. '
@@ -588,24 +612,6 @@ SAUCES: tuple = (
           'moment at a simmer or the dish tastes of raw alcohol. Fridge after '
           'opening; it is closer to a seasoning than to a wine.',
           0.35),
-    # GRANULES, not a bottled concentrate, and the salt figure is per tablespoon
-    # of the powder — which is an enormous dose nobody would ever use. That is the
-    # point: a rounded teaspoon eyeballed into half a cup of water is four times
-    # the stock it should be and a gram and a half of unaccounted salt.
-    Spice('dashi', 'Hondashi', ('dashi', 'bonito dashi', 'bonito soup stock',
-                                'katsuo dashi', 'japanese soup stock', 'dashi granules',
-                                'instant dashi'),
-          'ingredient', 'early', False, 0, '#c2a066',
-          'Instant bonito stock in granule form. Make it up first — about 1 TEAsp '
-          'to 2 cups of hot water for drinking-strength stock, so half a cup takes '
-          'a scant 1/4 TEAsp — and MEASURE it rather than shaking the jar over the '
-          'pan, because the powder is roughly a third salt and it is the easiest '
-          'thing here to quadruple by accident. It already contains MSG and sugar, '
-          'so a dish using it does not want MSG on top. Use it wherever a recipe '
-          'would otherwise get plain water. The one thing on this shelf that must '
-          'NOT go in the fridge: it is a powder, and condensation turns it to a '
-          'brick. Sealed, cool, dry.',
-          3.4),
     Spice('doubanjiang', 'Doubanjiang', ('pixian doubanjiang', 'broad bean paste',
                                          'fermented broad bean paste', 'chili bean paste',
                                          'toban djan', 'doubanjang', 'pixian bean paste'),
@@ -648,6 +654,62 @@ SAUCES: tuple = (
           'disappear into a sauce rather than sit in it as specks. Fridge once '
           'opened.',
           1.6),
+    Spice('worcestershire', 'Worcestershire Sauce', ('worcestershire', 'worcester sauce',
+                                                     'worchestershire sauce',
+                                                     'worstershire sauce',
+                                                     'lea and perrins', 'lea & perrins'),
+          'sauce', 'early', False, 0, '#2e1b10',
+          'Anchovy, tamarind and vinegar: a savoury-reading acid, which is the '
+          'only kind this kitchen likes, so it is welcome as a background depth '
+          'note. By the TEAspoon, not the tablespoon -- a splash tastes of '
+          'vinegar. Good in marinades for beef, in burger and meatloaf mixes, and '
+          'stirred into a braise. About 0.5g of salt a tablespoon (typical '
+          'label; check the bottle).',
+          0.5),
+    Spice('chili_garlic_sauce', 'Chili Garlic Sauce', ('chili garlic sauce', 'chilli garlic sauce',
+                                                       'sambal oelek', 'huy fong chili garlic',
+                                                       'garlic chili sauce'),
+          'sauce', 'bloom', False, 4, '#a3231a',
+          'A coarse chile-and-garlic paste, bright and sharp rather than sweet or '
+          'fermented. Already garlicked, so no garlic powder goes on top of it. '
+          'Stir it into the liquid or fry it for 30 seconds in oil; the garlic '
+          'catches on a dry hot pan. About 0.7g of salt a tablespoon (typical '
+          'label; check the jar).',
+          0.7),
+    Spice('chili_crisp', 'Chili Crisp (peanut)', ('chili in oil', 'chili in oil with peanuts',
+                                                 'chilli in oil with peanuts',
+                                                 'chili crisp', 'chilli crisp',
+                                                 'crunchy chili oil', 'peanut chili oil',
+                                                 'chili crunch'),
+          'sauce', 'garnish', False, 3, '#8a2c12',
+          'Chiles and peanuts in oil: a CONDIMENT for the plate or the last '
+          'minute, not a cooking oil -- the crisp bits burn in a hot pan. Spoon '
+          'the solids and the oil separately if the dish wants one more than the '
+          'other. Count the oil as fat. About 0.7g of salt a tablespoon (typical '
+          'label; check the jar).',
+          0.7),
+    Spice('minced_ginger', 'Minced Ginger (jar)', ('minced ginger', 'jarred ginger',
+                                                   'ginger paste', 'crushed ginger',
+                                                   'ginger in a jar'),
+          'paste', 'early', False, 0, '#c9a45a',
+          'Convenience ginger, already minced. Milder and a little sour from the '
+          'brine it is packed in, so use about the same volume as fresh minced and '
+          'taste before adding more. Fresh ginger is a house staple and the first '
+          'choice when peeling is no trouble; this is for speed. Not the dried '
+          'ginger on the rack, which is a different spice. Salt is not recorded '
+          'here (unknown), so treat it as small.'),
+    Spice('vanilla_extract', 'Vanilla Extract', ('vanilla', 'pure vanilla extract',
+                                                 'vanilla essence'),
+          'sauce', 'off_heat', False, 0, '#4a2a14',
+          'Sweet baking flavour, almost never wanted in a savoury dish. The '
+          'alcohol flashes off hot; add it after the heat is off, by the '
+          'TEAspoon or less.'),
+    Spice('dark_vanilla', 'Dark Vanilla', ('dark vanilla', 'dark vanilla extract',
+                                           'mexican vanilla', 'vanilla bean paste'),
+          'sauce', 'off_heat', False, 0, '#21120a',
+          'A darker, stronger vanilla than the extract. Same rules: off the '
+          'heat, by the TEAspoon or less, and almost never in a savoury dish. '
+          'Half the amount a recipe gives for plain extract.'),
 )
 
 
@@ -726,14 +788,14 @@ IN_STORAGE = (
 )
 
 STOVE_BY_KEY = {s.key: s for s in STOVE}
-SAUCE_BY_KEY = {s.key: s for s in SAUCES}
-for _s in STOVE + SAUCES:
+FRIDGE_BY_KEY = {s.key: s for s in FRIDGE}
+for _s in STOVE + FRIDGE:
     _ALIAS_INDEX.setdefault(_s.name.lower(), _s.key)
     _ALIAS_INDEX.setdefault(_s.key.replace('_', ' '), _s.key)
     for _alias in _s.aka:
         _ALIAS_INDEX.setdefault(_alias.lower(), _s.key)
 
-ALL_BY_KEY = {**SPICE_BY_KEY, **STOVE_BY_KEY, **SAUCE_BY_KEY}
+ALL_BY_KEY = {**SPICE_BY_KEY, **STOVE_BY_KEY, **FRIDGE_BY_KEY}
 
 # Everything that arrives already salted, with how much. Read by the prompt so
 # the deduction is printed rather than remembered.
@@ -794,33 +856,34 @@ DEFAULT_LAYOUT = {
     ),
     # Above the stove, immediately right of the racks. These are here because of
     # their CONTAINERS as much as their use -- the big jars do not fit a rack
-    # slot. Two rows of five rather than one row of ten: ten jars across is
-    # unreadable on a phone. Not frequency-sorted; moving the salt would just be
-    # annoying.
-    # Fourteen, in three rows that each mean something rather than a count that
-    # happens to wrap. Narrower rows also suit a shelf that is not as wide as the
-    # wall racks.
+    # slot. Three across and five down, so it packs beside the four-wide fridge
+    # at the same jar size (3 + 4 = the 7 jars of a wall rack). Not
+    # frequency-sorted; moving the salt would just be annoying.
     'stove': (
         # Reached for on nearly every dish.
-        ('salt', 'msg', 'bulk_black_pepper', 'bay_leaves'),
+        ('salt', 'msg', 'bulk_black_pepper'),
+        ('bay_leaves', 'dashi', 'saffron'),
         # Occasional, and here because of the jar rather than the frequency.
-        ('wild_hing', 'saffron', 'grains_of_paradise', 'black_fungus',
-         'umami_steak_seasoning'),
-        # Being used up. Kept together on purpose: this row shortens and then
-        # disappears, instead of leaving gaps scattered through the shelf.
-        ('zanzibar_black_pepper', 'purple_shallot_powder', 'onion_salt',
-         'chili_powder', 'parsley'),
+        ('wild_hing', 'grains_of_paradise', 'black_fungus'),
+        # Umami Steak ends the occasional jars; the rest are being used up. Kept
+        # together on purpose: that block shortens and then disappears, instead
+        # of leaving gaps scattered through the shelf.
+        ('umami_steak_seasoning', 'zanzibar_black_pepper', 'purple_shallot_powder'),
+        ('onion_salt', 'chili_powder', 'parsley'),
     ),
-    # Bottles and tubs, beside the stove. Grouped by what they are rather than by
-    # frequency: a hand that has picked up the soy a hundred times finds it by
-    # where its neighbours are, and the pastes are the ones you have to read.
-    'sauces': (
+    # The fridge. Four across, so it packs next to the stove shelf on a phone.
+    # Grouped by what they are rather than by frequency: a hand that has picked
+    # up the soy a hundred times finds it by where its neighbours are, and the
+    # pastes are the ones you have to read.
+    'fridge': (
         # The stir-fry four, reached for together.
         ('light_soy_sauce', 'dark_soy_sauce', 'oyster_sauce', 'toasted_sesame_oil'),
-        # The Japanese liquids.
-        ('mirin', 'cooking_sake', 'dashi'),
-        # The fermented pastes — the salty, spoonable end of the shelf.
-        ('doubanjiang', 'gochujang', 'garlic_soybean_paste'),
+        # Japanese liquids, then the one Western bottle.
+        ('mirin', 'cooking_sake', 'worcestershire'),
+        # The pastes -- the salty, spoonable end of the shelf.
+        ('doubanjiang', 'gochujang', 'garlic_soybean_paste', 'chili_garlic_sauce'),
+        # Condiments and the baking bottles at the back.
+        ('chili_crisp', 'minced_ginger', 'vanilla_extract', 'dark_vanilla'),
     ),
     # Not a shelf with slots. Row and column are recorded only to keep one
     # storage model for everything; they mean nothing here.
@@ -833,10 +896,10 @@ DEFAULT_LAYOUT = {
 # in a corner rather than as a separate kind of thing — a list beside a picture
 # was more machinery than one item deserved, and it made the freezer look like a
 # different category of storage instead of just a smaller shelf.
-RACKS = ('left', 'right', 'stove', 'sauces', 'freezer')
+RACKS = ('left', 'right', 'stove', 'fridge', 'freezer')
 
 RACK_LABELS = {'left': 'Left Rack', 'right': 'Right Rack',
-               'stove': 'Above the Stove', 'sauces': 'Sauces & Pastes',
+               'stove': 'Above the Stove', 'fridge': 'Fridge',
                'freezer': 'Freezer'}
 # Frequency rows, and they only mean anything on the two wall racks — those are
 # the shelves sorted by how often a hand goes to them. Everywhere else the rows

@@ -475,9 +475,9 @@ def normalise(payload: dict, out_of_stock=None) -> dict:
         item['note'] = spice.note
         item['burns'] = spice.burns
         # Anything that is not a wall-rack jar: the stove shelf and the
-        # sauce shelf both hold containers rather than spice jars.
+        # fridge both hold containers rather than spice jars.
         item['is_pantry'] = (spice.key in rack.STOVE_BY_KEY
-                             or spice.key in rack.SAUCE_BY_KEY)
+                             or spice.key in rack.FRIDGE_BY_KEY)
         item['heat'] = spice.heat
         item['color'] = spice.color
         if not item.get('stage') or item['stage'] not in rack.STAGES:

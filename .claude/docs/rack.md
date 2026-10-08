@@ -48,14 +48,17 @@ Label text:
 - Two highlighted jars side by side condense their captions to the cell (`hitCells` +
   `textLength`) so they don't overlap.
 
-## The sauce shelf
+## The fridge
 
-- Soy, dark soy, oyster sauce, sesame oil, mirin, salted cooking sake, instant dashi, doubanjiang,
-  gochujang and LKK garlic soybean paste are registry entries on a drawn shelf. A seasoning the app
-  can't see, the model won't use; one it can't weigh wrecks the salt.
+- Shelf key `fridge` (was `sauces`). Soy, dark soy, oyster sauce (Panda Brand, oyster-*flavored*),
+  sesame oil, mirin, salted cooking sake, Worcestershire, doubanjiang, gochujang, LKK garlic soybean
+  paste, chili garlic sauce, chili crisp (peanut), jarred minced ginger, vanilla extract, dark vanilla.
+  A seasoning the app can't see, the model won't use; one it can't weigh wrecks the salt.
+- **Hondashi is NOT in the fridge**: it's a powder (condensation bricks it) and lives above the stove.
 - **A tbsp of light soy carries ~2.4 g salt**, a third of a lb of meat's budget. `Spice.salt_per_tbsp`
   records it, the prompt flags it, and `SALT_DOCTRINE` tells the model to subtract it and show the
-  subtraction.
+  subtraction. Worcestershire, chili garlic and chili crisp figures (0.5 / 0.7 / 0.7) are typical-label
+  estimates, not read off the owner's bottles. Minced ginger is 0 (unknown).
 - Toasted sesame oil carries **0** on purpose: an invented figure would subtract from a real dish.
 - **A drawn shelf is not the retired pantry.** `pantry`/`cupboard` stay retired (they were lists
   beside a picture). Everything that holds a jar is drawn.
@@ -65,6 +68,17 @@ Label text:
 - **`black bean garlic sauce` resolves to the garlic soybean paste** (bought instead of it).
 - Rows here group by kind, not frequency. `rack.wall_racks()` says which shelves have frequency
   rows and is sent as `wall_racks` in the rack view. Don't hardcode `!== 'stove'` in screens.
+- **Boot migration** (`db._seed_layout`): if any layout row says `sauces`, the `sauces` and `stove`
+  rows are dropped and re-seeded from `DEFAULT_LAYOUT` (the stove was re-laid 3 across). Fires once.
+
+## Packed layout (phone and desktop)
+
+- `FullRack` draws the wall racks (left, right) full width, then packs every other shelf into **one
+  block exactly one wall rack wide**: two columns, each shelf dropped into the shorter one (stove 3x5
+  | fridge 4x4 over the one-jar freezer). Keep the stove 3 wide and the fridge 4 wide: 3 + 4 = 7
+  jars, and `PAD_SMALL` (no row numbers on these shelves) is what lets the two fit at the wall
+  racks' jar size. Widening either one shrinks its jars.
+- On a wide screen the block is the third grid column.
 
 ## Always in the house
 

@@ -1011,7 +1011,7 @@ def test_bay_leaves_are_on_the_stove_shelf():
     # The one pantry item promoted: nothing else in this kitchen does the
     # background-aromatic job in a wet, long-cooked dish.
     assert 'bay_leaves' in rack.STOVE_BY_KEY
-    assert 'bay_leaves' in rack.DEFAULT_LAYOUT['stove'][0]
+    assert 'bay_leaves' in rack.DEFAULT_LAYOUT['stove'][0] + rack.DEFAULT_LAYOUT['stove'][1]  # top two rows
     assert db.layout()['bay_leaves']['rack'] == 'stove'
     assert rack.resolve('bay leaf').key == 'bay_leaves'
 
@@ -1395,10 +1395,10 @@ def test_hing_keeps_its_tempering_default_without_a_burn_warning():
 def test_every_shelf_is_drawn():
     # There is no second kind of storage: every place a jar can be is a shelf in
     # the picture, and nothing is a list beside one. The freezer holds a single
-    # bag and is still drawn; the sauce shelf holds bottles and is still drawn.
+    # bag and is still drawn; the fridge holds bottles and is still drawn.
     # The two names that were retired were retired for being LISTS, and adding a
     # drawn shelf is not the same thing as bringing one of those back.
-    assert set(rack.RACKS) == {'left', 'right', 'stove', 'sauces', 'freezer'}
+    assert set(rack.RACKS) == {'left', 'right', 'stove', 'fridge', 'freezer'}
     assert not hasattr(rack, 'LISTED_RACKS')
     for name in ('pantry', 'cupboard'):
         assert name not in rack.RACKS
@@ -1738,3 +1738,38 @@ def test_the_rating_reminder_is_off_without_a_configured_file(monkeypatch):
     monkeypatch.setattr(db.config, 'TODO_FILE', None)
     monkeypatch.delenv('PYTEST_CURRENT_TEST', raising=False)
     assert vault._enabled() is False
+
+
+# ── fridge shelf and packed small racks ──────────────────────────────────────
+
+def test_the_small_shelves_pack_to_one_wall_rack_width():
+    # Stove 3 wide + fridge 4 wide = the 7 jars of a wall rack, which is what lets
+    # the phone view pack them side by side at the same jar size.
+    assert max(len(r) for r in rack.DEFAULT_LAYOUT['stove']) == 3
+    assert max(len(r) for r in rack.DEFAULT_LAYOUT['fridge']) == 4
+
+
+def test_hondashi_is_above_the_stove_and_the_fridge_holds_the_sauces():
+    layout = db.layout()
+    assert layout['dashi']['rack'] == 'stove'
+    for key in ('light_soy_sauce', 'gochujang', 'worcestershire', 'chili_garlic_sauce',
+                'chili_crisp', 'minced_ginger', 'vanilla_extract', 'dark_vanilla'):
+        assert layout[key]['rack'] == 'fridge', key
+    assert rack.resolve('worstershire sauce').key == 'worcestershire'
+    assert rack.resolve('panda brand oyster flavored sauce').key == 'oyster_sauce'
+
+
+def test_an_old_sauces_layout_is_moved_to_the_fridge_once():
+    conn = db.connect()
+    conn.execute("UPDATE layout SET rack = 'sauces', row = 0, col = 0 "
+                 "WHERE spice_key IN ('light_soy_sauce', 'dashi')")
+    conn.execute("DELETE FROM layout WHERE spice_key IN ('worcestershire', 'minced_ginger')")
+    conn.commit()
+    db.ensure_schema()
+    layout = db.layout()
+    assert layout['light_soy_sauce']['rack'] == 'fridge'
+    assert layout['dashi']['rack'] == 'stove'
+    assert 'worcestershire' in layout
+    assert not any(p['rack'] == 'sauces' for p in layout.values())
+    slots = [(p['rack'], p['row'], p['col']) for p in layout.values()]
+    assert len(slots) == len(set(slots)), 'two jars landed in one slot'

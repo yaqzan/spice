@@ -81,9 +81,10 @@ handled with more care than the spices do.
 * **Pre-salted blends count against it.** Cajun, NOLA Cajun, Tex Mex, BBQ, Jerk
   and the Umami Steak Seasoning already contain salt. Estimate it, subtract it,
   and say so.
-* **The sauce shelf is salt in solution, and it is the easiest way to ruin a
-  dish here.** Soy, oyster sauce, doubanjiang, the garlic soybean paste, dashi
-  and the salted cooking sake all carry real salt, and one tablespoon of light
+* **The fridge is salt in solution, and it is the easiest way to ruin a
+  dish here.** Soy, oyster sauce, doubanjiang, the garlic soybean paste, the
+  chili garlic sauce, Worcestershire, chili crisp, the salted cooking sake and
+  the dashi above the stove all carry real salt, and one tablespoon of light
   soy is about a third of what a pound of meat is allowed. Every one of them is
   listed in the inventory with its grams of salt per tablespoon: **add those up,
   subtract the total, and show the subtraction in `salt.rationale`.** A dish

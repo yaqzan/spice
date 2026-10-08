@@ -242,6 +242,15 @@ def _seed_layout() -> None:
     user has rearranged is never stomped, and a spice newly added to the registry
     lands in its default slot instead of vanishing from the visual.
     """
+    # One-time move: the sauce shelf became the fridge, and the stove shelf was
+    # re-laid three across so the two pack side by side on a phone. None of those
+    # shelves are re-sorted or edited by hand, so their rows are dropped and
+    # re-seeded from the defaults. The old 'sauces' rows are the trigger, and
+    # they are gone after this runs, so it fires once.
+    if query("SELECT 1 FROM layout WHERE rack = 'sauces' LIMIT 1"):
+        conn = connect()
+        conn.execute("DELETE FROM layout WHERE rack IN ('sauces', 'stove')")
+        conn.commit()
     known = {r['spice_key'] for r in query('SELECT spice_key FROM layout')}
     rows = []
     for rack_name in rack.RACKS:

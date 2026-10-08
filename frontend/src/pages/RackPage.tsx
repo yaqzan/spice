@@ -67,7 +67,7 @@ export function RackPage() {
 
       {(wide || view === 'picture') ? (
         <FullRack jars={rack.jars} racks={rack.racks}
-                  rackLabels={rack.rack_labels}
+                  rackLabels={rack.rack_labels} wallRacks={rack.wall_racks}
                   onTap={setTapped} selected={tapped?.spice_key ?? null} />
       ) : (
         <RackList jars={rack.jars} racks={rack.racks}
