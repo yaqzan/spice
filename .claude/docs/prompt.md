@@ -297,7 +297,8 @@ dated-entries invariant applies to the prompt's history, not the card. The card'
 three things read at a glance. Blend rows and the "Not on the rack" list sort
 TBsp, then TEAsp, then the rest (within a bowl; bowls keep pan order), so one
 measurer is used at a time. The step's bowl reminder shows names only until
-pressed, then the amounts.
+pressed, then the amounts; the switch is FLIP-animated (`StepBowl`), since a
+wrapped line turning into a column is a layout change CSS cannot transition.
 
 ## Structured output
 

@@ -336,9 +336,13 @@ textarea { resize: vertical; }
 .step-bowls { list-style: none; padding: 8px 10px; margin: 0 0 8px;
               background: var(--surface-2); border-radius: 10px;
               display: flex; flex-direction: column; gap: 6px; font-size: 12.5px; }
-.step-bowls > li { display: flex; align-items: flex-start; gap: 8px; cursor: pointer; }
+.step-bowls > li { display: flex; align-items: flex-start; gap: 8px; cursor: pointer;
+                   overflow: hidden; /* clips the row while its height animates */ }
 .step-bowls > li.open .step-bowl-items { flex-direction: column; gap: 4px; }
-.step-bowl-amount { margin-left: 4px; font-weight: 600; }
+.step-bowl-amount { margin-left: 4px; font-weight: 600;
+                    animation: amount-in 180ms 90ms cubic-bezier(0.2, 0, 0, 1) both; }
+@keyframes amount-in { from { opacity: 0; transform: translateX(-4px); } }
+@media (prefers-reduced-motion: reduce) { .step-bowl-amount { animation: none; } }
 .step-bowls .bowl-n { width: 18px; height: 18px; font-size: 11px; margin-top: 1px; }
 .step-bowl-items { display: flex; flex-wrap: wrap; gap: 4px 10px; min-width: 0; }
 .step-bowl-item { display: inline-flex; align-items: center; gap: 5px; }

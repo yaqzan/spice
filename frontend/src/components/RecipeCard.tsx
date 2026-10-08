@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react'
+import { useLayoutEffect, useMemo, useRef, useState } from 'react'
 import { Amount } from './Amount'
 import { FullRack } from './SpiceRack'
 import { mentioned, StepText } from './StepText'
@@ -175,10 +175,60 @@ function stampPlan(payload: RecipePayload) {
   })
 }
 
+const MOTION = { duration: 220, easing: 'cubic-bezier(0.2, 0, 0, 1)' }
+
+/** A bowl reminder under a step: tap to unfold it into a list with amounts.
+ *
+ *  Opening changes the layout (a wrapped line becomes a column), which CSS
+ *  cannot transition. So it is animated FLIP-style: measure every jar and the
+ *  row before the switch, render the new layout, then play each one back from
+ *  where it was. Closing fades the amounts first so they do not vanish mid-glide. */
 function StepBowl({ bowl }: { bowl: BlendGroup }) {
   const [open, setOpen] = useState(false)
+  const row = useRef<HTMLLIElement>(null)
+  const before = useRef<{ height: number; items: DOMRect[] } | null>(null)
+  const busy = useRef(false)
+
+  const items = () => Array.from(row.current?.querySelectorAll<HTMLElement>('.step-bowl-item') ?? [])
+
+  const toggle = () => {
+    const el = row.current
+    if (!el || busy.current) return
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+      setOpen((v) => !v)
+      return
+    }
+    const snap = () => {
+      before.current = { height: el.offsetHeight, items: items().map((i) => i.getBoundingClientRect()) }
+      setOpen((v) => !v)
+    }
+    if (!open) return snap()
+    busy.current = true
+    const fades = Array.from(el.querySelectorAll<HTMLElement>('.step-bowl-amount'))
+      .map((a) => a.animate([{ opacity: 1 }, { opacity: 0 }], { duration: 120, fill: 'forwards' }))
+    Promise.all(fades.map((f) => f.finished)).then(snap, snap)
+  }
+
+  useLayoutEffect(() => {
+    const el = row.current
+    const was = before.current
+    before.current = null
+    busy.current = false
+    if (!el || !was) return
+    el.animate([{ height: `${was.height}px` }, { height: `${el.offsetHeight}px` }],
+               MOTION)
+    items().forEach((item, i) => {
+      const from = was.items[i]
+      if (!from) return
+      const to = item.getBoundingClientRect()
+      const dx = from.left - to.left
+      const dy = from.top - to.top
+      if (dx || dy) item.animate([{ transform: `translate(${dx}px, ${dy}px)` }, { transform: 'none' }], MOTION)
+    })
+  }, [open])
+
   return (
-    <li className={open ? 'open' : ''} onClick={() => setOpen((v) => !v)}>
+    <li ref={row} className={open ? 'open' : ''} onClick={toggle}>
       <span className="bowl-n">{bowl.bowl}</span>
       <span className="step-bowl-items">
         {bowl.items.map((item) => (
