@@ -37,9 +37,22 @@ body {
 
 .app { display: flex; flex-direction: column; min-height: 100%; }
 
+/* Home-screen app runs black-translucent (viewport-fit=cover), so the page sits
+   under the clock and notch: push it down by the inset, and keep a scrim there
+   so text scrolling past doesn't collide with the status bar. */
 main {
   flex: 1;
+  padding-top: env(safe-area-inset-top);
   padding-bottom: calc(var(--tabs-h) + env(safe-area-inset-bottom) + 16px);
+}
+
+body::before {
+  content: '';
+  position: fixed; top: 0; left: 0; right: 0;
+  height: env(safe-area-inset-top);
+  background: rgba(22, 19, 15, 0.94);
+  backdrop-filter: blur(12px);
+  z-index: 20;
 }
 
 .page { padding: 20px 16px 8px; max-width: 640px; margin: 0 auto; }
