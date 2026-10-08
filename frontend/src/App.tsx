@@ -1,4 +1,4 @@
-import { NavLink, Route, Routes } from 'react-router-dom'
+import { Navigate, NavLink, Route, Routes } from 'react-router-dom'
 import { AccessProvider, useAccess } from './access'
 import { AskPage } from './pages/AskPage'
 import { DemoPage } from './pages/DemoPage'
@@ -12,7 +12,7 @@ import { SettingsPage } from './pages/SettingsPage'
 const TABS = [
   { to: '/', label: 'Ask', icon: '🍳' },
   { to: '/rack', label: 'Rack', icon: '🧂' },
-  { to: '/cooked', label: 'Cookbook', icon: '📖' },
+  { to: '/cookbook', label: 'Cookbook', icon: '📖' },
   { to: '/settings', label: 'Settings', icon: '⚙️' },
 ]
 
@@ -32,7 +32,8 @@ function Shell() {
           <Route path="/" element={authed ? <AskPage /> : <DemoPage />} />
           <Route path="/recipe/:id" element={<RecipePage />} />
           <Route path="/rack" element={<RackPage />} />
-          <Route path="/cooked" element={<HistoryPage />} />
+          <Route path="/cookbook" element={<HistoryPage />} />
+          <Route path="/cooked" element={<Navigate to="/cookbook" replace />} />
           <Route path="/settings" element={<SettingsPage />} />
         </Routes>
       </main>
