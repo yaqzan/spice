@@ -276,6 +276,13 @@ sauce-shelf subtraction already lives. Not itself a rated-dish measurement —
 it's the existing dilution logic (salt tracks what absorbs it) applied to
 mass instead of volume.
 
+**Remove/return steps come in pairs.** Recipe 26 (2026-09-01) said "pull it
+while the centres are slightly underdone" in the sear step and "return the
+chicken" in the sauce step, but never said to take it out of the pan, so the
+cook poured the sauce over it. The prompt now requires the removing step to
+name the plate and the returning step to name where it comes from. Recipe 26's
+step 4 was patched by hand on 2026-10-08.
+
 **`confidence`, not a predicted score.** A model asked to predict its own
 rating says 8 or 9 every time. `proven` / `well_trodden` / `adaptation` /
 `experiment` carries actual information; prompt says `experiment` is a good

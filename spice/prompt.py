@@ -283,6 +283,13 @@ as a visual, so anything you write outside the fields is lost.
   prep instruction sitting only in the ingredient line where the cook never
   reads it as an instruction. The same goes for any other prep named in an
   amount: diced, minced, butterflied, pounded thin.
+* **Anything taken out of the pan must be told where it goes, and when it
+  comes back.** "Pull it while the centres are slightly underdone" is not an
+  instruction: the cook leaves it in the pan and pours the sauce over it. The
+  step that removes food says "move to a plate" (or bowl) and names it, and
+  the step that returns it says "return the chicken from the plate". If a
+  step says "return", "add back" or "the reserved X", an earlier step must have
+  removed it; if you never take it out, don't write "return".
 * **`confidence` is not a sales pitch.** `proven` means it is close to something
   already rated 7+. `experiment` is a perfectly good answer and is more useful
   than false certainty. Do not predict a score.
