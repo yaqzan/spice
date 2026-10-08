@@ -120,6 +120,21 @@ The dot is the jar's colour (same swatch as rack + bowl); any step naming a jar
 can stamp it. Its measurement stays with the step it belongs to. Fridge items
 have no jar, so no dot — an empty ring reads as a failed-to-load swatch.
 
+A live recipe once read "1 TBsp of the oil 2 TBsp" — the model wrote "of the"
+between the amount and the name, breaking adjacency, so `StepText.tsx` left "1
+TBsp" as its own bare chip and separately stamped "oil" with its full
+`from_kitchen` amount (2 TBsp, the whole bottle's worth). Two true numbers,
+visually glued into one confusing sentence. Fixed in the prompt, not the
+renderer: amounts must sit directly beside the ingredient they measure ("1
+TBsp oil"), never separated by "of the" or similar.
+
+**A `from_kitchen` prep note is not a step.** The same recipe listed "chicken
+breast, thinly sliced into cutlets" as an ingredient amount, but no step ever
+said to slice it — the cook read the ingredient line as a description, not an
+instruction, and salted the chicken whole. Prep folded into an amount (sliced,
+diced, minced, butterflied, pounded thin) must also appear as an instruction
+in the first step that needs it.
+
 The card also prints each named bowl's contents under the step (names + jar
 colours, never amounts). Two rules follow: the prompt forbids reciting bowl
 contents inside a step (the Berbere generation once spent all of step 1 on
@@ -235,8 +250,24 @@ after, including a future session reading back a saved payload or a vault
 note. Now the prompt opens with today's date, rotation reads "last cooked
 2026-08-21, 3d ago", and every rated dish shows the day it was eaten.
 
-**Heat as a dial number.** "Medium-high" kills spice crusts. Steps render as
-`med-low - dial 3` against the kitchen's own 1-10 calibration.
+**Heat as a dial number, unless the step is actually in the oven.** "Medium-high"
+kills spice crusts. Steps render as `med-low 3` (short, so the pill never wraps the step title) against the kitchen's own
+1-10 calibration. `HEATS` has one exception, `oven` — for a step whose heat
+source is the appliance with a door, not a burner (a covered Dutch oven
+simmering on the stove is still a dial-word step; the pot's name doesn't
+decide this, the heat source does). `oven_f` carries the real Fahrenheit
+number and stays `0` everywhere else; `schema.normalise()` enforces the
+pairing both ways.
+
+**Bone-in cuts scale salt off edible weight, not purchased weight.** The
+7.5 g/lb baseline below was measured on boneless cuts. `portion_lb` is what he
+bought, bone included, so a rack of ribs salted at the full percentage
+over-seasons the meat that's actually there. The prompt now names edible
+fractions per cut (ribs ~60-65%, bone-in chicken thighs ~80-85%, bone-in chops
+~85-90%) and asks for that arithmetic in `salt.rationale`, the same place the
+sauce-shelf subtraction already lives. Not itself a rated-dish measurement —
+it's the existing dilution logic (salt tracks what absorbs it) applied to
+mass instead of volume.
 
 **`confidence`, not a predicted score.** A model asked to predict its own
 rating says 8 or 9 every time. `proven` / `well_trodden` / `adaptation` /

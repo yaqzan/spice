@@ -18,7 +18,7 @@ import re
 
 from . import rack
 
-HEATS = ('none', 'low', 'medium_low', 'medium', 'medium_high', 'high')
+HEATS = ('none', 'low', 'medium_low', 'medium', 'medium_high', 'high', 'oven')
 CONFIDENCE = ('proven', 'well_trodden', 'adaptation', 'experiment')
 
 # OpenRouter passes this to providers that support strict JSON schema output.
@@ -138,7 +138,7 @@ RECIPE_SCHEMA = {
             'type': 'array',
             'items': {
                 'type': 'object', 'additionalProperties': False,
-                'required': ['n', 'title', 'body', 'minutes', 'heat', 'watch_for'],
+                'required': ['n', 'title', 'body', 'minutes', 'heat', 'oven_f', 'watch_for'],
                 'properties': {
                     'n': {'type': 'integer'},
                     'title': {'type': 'string', 'description': '2-4 words, e.g. "Sear in batches".'},
@@ -149,7 +149,15 @@ RECIPE_SCHEMA = {
                                             'step. Never spend a step reciting which spice '
                                             'is in which bowl.'},
                     'minutes': {'type': 'integer', 'description': '0 if not time-bound.'},
-                    'heat': {'type': 'string', 'enum': list(HEATS)},
+                    'heat': {'type': 'string', 'enum': list(HEATS),
+                              'description': "Stovetop dial word, or 'oven' when this step "
+                                             'happens inside the oven rather than on a burner. '
+                                             "Use 'oven' only for an actual oven step, never "
+                                             'as a synonym for a covered pot on the stove.'},
+                    'oven_f': {'type': 'integer',
+                               'description': "The oven temperature in Fahrenheit. Required "
+                                              "whenever heat is 'oven'; 0 for every other "
+                                              'step - a dial word never needs a degree number.'},
                     'watch_for': {'type': 'string',
                                   'description': 'The sensory checkpoint - what it should look, '
                                                  'smell or sound like, and the failure sign. '
@@ -205,7 +213,9 @@ BLEND_ALIASES = {'name': 'spice', 'spice_name': 'spice', 'ingredient': 'spice',
 STEP_ALIASES = {'number': 'n', 'index': 'n', 'step': 'n', 'heading': 'title',
                 'text': 'body', 'instruction': 'body', 'description': 'body',
                 'time_min': 'minutes', 'duration_min': 'minutes',
-                'heat_level': 'heat', 'watch': 'watch_for', 'note': 'watch_for'}
+                'heat_level': 'heat', 'watch': 'watch_for', 'note': 'watch_for',
+                'oven_temp': 'oven_f', 'oven_temp_f': 'oven_f',
+                'temp_f': 'oven_f', 'temperature_f': 'oven_f', 'fahrenheit': 'oven_f'}
 
 DEFAULTS = {
     'title': 'Untitled recipe', 'cuisine': '', 'protein': '', 'portion_lb': 1.0,
@@ -555,6 +565,14 @@ def normalise(payload: dict, out_of_stock=None) -> dict:
             step['minutes'] = 0
         if step.get('heat') not in HEATS:
             step['heat'] = 'none'
+        try:
+            step['oven_f'] = int(step.get('oven_f') or 0)
+        except (TypeError, ValueError):
+            step['oven_f'] = 0
+        if step['heat'] == 'oven' and not step['oven_f']:
+            step['oven_f'] = 350
+        if step['heat'] != 'oven':
+            step['oven_f'] = 0
         # Attach each spice to its step so the step list can show the jars in
         # place rather than making the cook scroll back up mid-sear.
         step['spices'] = [

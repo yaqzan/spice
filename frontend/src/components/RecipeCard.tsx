@@ -9,11 +9,16 @@ import type { BlendGroup, BlendItem, Jar, RackView, RecipePayload, Step } from '
 // burns spice crusts. The dial numbers are the kitchen's own calibration note.
 const HEAT_LABELS: Record<string, string> = {
   none: 'no heat',
-  low: 'low · dial 2',
-  medium_low: 'med-low · dial 3',
-  medium: 'medium · dial 4-5',
-  medium_high: 'med-high · dial 6-7',
-  high: 'high · dial 8-9',
+  low: 'low 2',
+  medium_low: 'med-low 3',
+  medium: 'med 4-5',
+  medium_high: 'med-high 6-7',
+  high: 'high 8-9',
+}
+
+function heatLabel(step: Step): string {
+  if (step.heat === 'oven') return `oven · ${step.oven_f}°F`
+  return HEAT_LABELS[step.heat] || step.heat
 }
 
 const CONFIDENCE_LABELS: Record<string, string> = {
@@ -181,7 +186,7 @@ function StepRow({ step, groups, stamps, allow }: {
         <span className="step-n">{step.n}</span>
         <h4>{step.title}</h4>
         <span className="step-meta">
-          {step.heat !== 'none' && <Chip tone="heat">{HEAT_LABELS[step.heat] || step.heat}</Chip>}
+          {step.heat !== 'none' && <Chip tone="heat">{heatLabel(step)}</Chip>}
           {step.minutes > 0 && <Chip>{fmt(step.minutes)}</Chip>}
         </span>
       </div>

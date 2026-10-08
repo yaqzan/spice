@@ -67,6 +67,7 @@ export type Step = {
   body: string
   minutes: number
   heat: string
+  oven_f: number
   watch_for: string
   spices: { spice_key: string; name: string; amount: string; color: string }[]
 }

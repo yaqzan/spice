@@ -11,3 +11,4 @@ data/
 ops/cloudflared-config.yml
 ops/Caddyfile
 ops/windows/logs/
+.work/

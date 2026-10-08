@@ -90,6 +90,17 @@ handled with more care than the spices do.
   built on soy and oyster sauce may well need no measured salt on the protein at
   all beyond a light dry brine — say so rather than adding salt to reach a
   number.
+* **Bone-in cuts: salt the edible weight, not the purchased weight.**
+  `portion_lb` is what he bought, bone included, and the percentage target
+  above was measured on boneless cuts. Bone carries no salt and dilutes
+  nothing, so before applying the percentage, estimate the edible fraction and
+  say so in `salt.rationale` alongside the sauce-shelf subtraction: **back
+  ribs / spare ribs ~60-65% edible**, **bone-in chicken thighs or drumsticks
+  ~80-85%**, **bone-in chops or a whole bird ~85-90%**. A boneless cut is
+  100% edible and needs no adjustment. This still applies to a dry brine —
+  the salt only needs to cover the meat it will actually sit on, and a
+  braise's `salt_check` step remains the final backstop, not a substitute for
+  doing this arithmetic up front.
 * **MSG does not buy you a salt reduction.** Roughly **1.3-1.7g per pound**
   (a quarter to a third of a teaspoon) on ground meat, savoury braises and
   bowls. **Do NOT cut the salt for it**, and this is settled by a cooked dish,
@@ -128,6 +139,15 @@ Treat the burner setting in a recipe as a starting guess, never an instruction.
 
 Whole seeds are the opposite: mustard, cumin, fennel, nigella and annatto want
 hot fat at the very start (`temper`), and mustard seeds must actually pop.
+
+* **A dial word is for a burner. An oven gets a real number.** If a step
+  actually goes into the oven — not "covered pot on the stove", the appliance
+  with a door — set that step's `heat` to `oven` and give `oven_f` the actual
+  Fahrenheit temperature. Never write a dial word for an oven step, and never
+  set `oven_f` for a stovetop step; it stays `0` there. A covered Dutch oven or
+  wok simmering on a burner for hours is still a stovetop step with a dial
+  word, even though the vessel is called "a Dutch oven" — the test is which
+  appliance is actually heating it, not the pot's name.
 """
 
 PROTEIN_RULES = """\
@@ -240,6 +260,20 @@ as a visual, so anything you write outside the fields is lost.
   not on the rack, it goes in `from_kitchen`, not in `blend`. Fresh garlic,
   onions, yoghurt, soy sauce, oil, rice — put them there explicitly. Do not
   assume they will be inferred.
+* **Put a measurement directly next to the ingredient it belongs to** — "1 TBsp
+  oil", never "1 TBsp of the oil". The card highlights an amount by folding it
+  into the ingredient's chip, but only when the two sit adjacent; a word like
+  "of the" in between breaks that, and the app falls back to showing the
+  step's number AND the ingredient's full shopping-list amount side by side —
+  "1 TBsp of the oil 2 TBsp" on screen. If a step uses only part of what is on
+  the shopping list, say the exact amount right beside the name so it reads
+  as one number, not two.
+* **Every prep implied by a `from_kitchen` amount must be an actual step.** If
+  `from_kitchen` says "1 lb, thinly sliced into cutlets", step 1 (or whichever
+  step comes first) must be the one that says to slice it — do not leave a
+  prep instruction sitting only in the ingredient line where the cook never
+  reads it as an instruction. The same goes for any other prep named in an
+  amount: diced, minced, butterflied, pounded thin.
 * **`confidence` is not a sales pitch.** `proven` means it is close to something
   already rated 7+. `experiment` is a perfectly good answer and is more useful
   than false certainty. Do not predict a score.
