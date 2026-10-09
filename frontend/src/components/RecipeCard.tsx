@@ -79,13 +79,16 @@ function BlendRow({ item }: { item: BlendItem }) {
         <strong>{item.name}</strong>
       </span>
       <span className="blend-amount"><Amount>{item.amount}</Amount></span>
-      {open && (
-        <span className="blend-detail">
+      {/* Always rendered so it can animate shut as well as open; the outer
+          grid track goes 0fr -> 1fr, which CSS can transition where height:auto
+          cannot. */}
+      <span className={`blend-detail${open ? ' open' : ''}`} aria-hidden={!open}>
+        <span className="blend-detail-inner">
           {item.why && <span className="blend-why">{item.why}</span>}
           <span className="blend-note">{item.note}</span>
           {item.out_of_stock && <span className="blend-warn">Marked out of stock.</span>}
         </span>
-      )}
+      </span>
     </li>
   )
 }
