@@ -36,7 +36,7 @@ export function AskPage() {
       <h1>What are we cooking?</h1>
 
       <form onSubmit={(e) => { e.preventDefault(); ask() }}>
-        <input className="ask-input" value={query} autoFocus
+        <input className="ask-input" value={query}
                placeholder="pork belly, something Korean"
                onChange={(e) => setQuery(e.target.value)} />
 
