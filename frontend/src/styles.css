@@ -83,6 +83,16 @@ p { margin: 0 0 10px; }
   z-index: 20;
 }
 
+/* iOS standalone hands the page a layout viewport that is sometimes ~47pt short
+   on Ask, so bottom:0 floats the bar above the home indicator with a gap under it.
+   Pin the top edge to the large viewport height instead. */
+@supports (height: 100lvh) {
+  .tabs {
+    bottom: auto;
+    top: calc(100lvh - var(--tabs-h) - 1px - env(safe-area-inset-bottom));
+  }
+}
+
 .tabs a {
   display: flex; flex-direction: column; align-items: center; justify-content: center;
   gap: 2px; height: var(--tabs-h);
@@ -514,7 +524,7 @@ textarea { resize: vertical; }
      pill over the content instead. */
   .tabs {
     left: 50%; right: auto; transform: translateX(-50%);
-    bottom: 18px; width: 420px; border-radius: 999px;
+    top: auto; bottom: 18px; width: 420px; border-radius: 999px;
     border: 1px solid var(--line);
     box-shadow: 0 8px 28px rgba(0, 0, 0, 0.45);
   }
