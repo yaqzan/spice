@@ -1,4 +1,4 @@
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
 import { Navigate, NavLink, Route, Routes } from 'react-router-dom'
 import { AccessProvider, useAccess } from './access'
 import { AskPage } from './pages/AskPage'
@@ -40,6 +40,39 @@ function useViewportNudge() {
   }, [])
 }
 
+// TEMPORARY: viewport readout while the cold-start tab bar position is debugged.
+function ViewportDebug() {
+  const [text, setText] = useState('')
+  useEffect(() => {
+    const read = () => {
+      const probe = document.createElement('div')
+      probe.style.cssText = 'position:fixed;left:0;bottom:0;width:1px;height:0;padding-bottom:env(safe-area-inset-bottom)'
+      document.body.appendChild(probe)
+      const inset = probe.offsetHeight
+      const probeBottom = probe.getBoundingClientRect().bottom
+      probe.remove()
+      const bar = document.querySelector('.tabs')?.getBoundingClientRect()
+      const vv = window.visualViewport
+      setText([
+        `inner ${window.innerWidth}x${window.innerHeight}  outer ${window.outerHeight}`,
+        `screen ${screen.width}x${screen.height}  client ${document.documentElement.clientHeight}`,
+        `visual ${vv?.width}x${vv?.height?.toFixed(1)} off ${vv?.offsetTop} pgTop ${vv?.pageTop}`,
+        `inset-b ${inset}  fixedBottom ${probeBottom}  scrollY ${window.scrollY}`,
+        `scrollH ${document.documentElement.scrollHeight}  bar top ${bar?.top?.toFixed(1)} bot ${bar?.bottom?.toFixed(1)}`,
+        `standalone ${(navigator as unknown as { standalone?: boolean }).standalone}`,
+      ].join('\n'))
+    }
+    read()
+    const id = window.setInterval(read, 1000)
+    return () => window.clearInterval(id)
+  }, [])
+  return (
+    <pre style={{ position: 'fixed', left: 8, right: 8, bottom: 180, zIndex: 30, margin: 0,
+                  fontSize: 11, lineHeight: 1.35, color: '#9f9', background: 'rgba(0,0,0,.7)',
+                  padding: 6, whiteSpace: 'pre-wrap' }}>{text}</pre>
+  )
+}
+
 function Shell() {
   const { ready, authed } = useAccess()
   useViewportNudge()
@@ -62,6 +95,7 @@ function Shell() {
           <Route path="/settings" element={<SettingsPage />} />
         </Routes>
       </main>
+      <ViewportDebug />
       <nav className="tabs">
         {TABS.map((tab) => (
           <NavLink key={tab.to} to={tab.to} end={tab.to === '/'}
