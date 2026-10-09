@@ -1,7 +1,18 @@
 import type {
-  Health, HistoryRow, Proposal, RackView, Recipe, RecipePayload, SettingsResponse,
-  Placement,
+  Health, HeatLevel, HistoryRow, Proposal, RackView, Recipe, RecipePayload,
+  SettingsResponse, Placement,
 } from './types'
+
+/** The card's dials. Blank means "as written". */
+export type Dials = { serves?: number; heat?: HeatLevel }
+
+function dialQuery({ serves, heat }: Dials = {}): string {
+  const params = new URLSearchParams()
+  if (serves) params.set('serves', String(serves))
+  if (heat) params.set('heat', heat)
+  const query = params.toString()
+  return query ? `?${query}` : ''
+}
 
 // No credential rides on these requests, and there is nowhere to put one. The
 // server decides what this caller may see from the TCP address the request
@@ -33,7 +44,7 @@ export const api = {
   health: () => call<Health>('/health'),
 
   /** The frozen example. Public, and costs nothing to serve. */
-  demo: () => call<{ payload: RecipePayload }>('/demo'),
+  demo: (dials?: Dials) => call<{ payload: RecipePayload }>(`/demo${dialQuery(dials)}`),
 
   rack: () => call<RackView>('/rack'),
   setStock: (spice_key: string, stock: string) =>
@@ -45,8 +56,7 @@ export const api = {
     post<Recipe>('/ask', body),
 
   recipes: (limit = 50) => call<{ recipes: HistoryRow[] }>(`/recipes?limit=${limit}`),
-  recipe: (id: number, scale?: number) =>
-    call<Recipe>(`/recipes/${id}${scale && scale !== 1 ? `?scale=${scale}` : ''}`),
+  recipe: (id: number, dials?: Dials) => call<Recipe>(`/recipes/${id}${dialQuery(dials)}`),
   rate: (id: number, body: Record<string, unknown>) =>
     post<Recipe>(`/recipes/${id}/rate`, body),
 

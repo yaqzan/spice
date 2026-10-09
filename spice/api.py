@@ -144,7 +144,7 @@ def create_app():
         same every time, and keep working when the API key is absent or the
         OpenRouter account is empty.
         """
-        payload = recipes.demo_recipe()
+        payload = recipes.demo_recipe(request.args.get('serves'), request.args.get('heat'))
         if payload is None:
             return jsonify({'error': 'no demo recipe available'}), 404
         return jsonify({'payload': payload})
@@ -263,7 +263,10 @@ def create_app():
             # Decorated on the way out, never trusted from storage: the salt line
             # then quotes whichever salt is in the cupboard today, and a recipe
             # saved before the card stopped printing grams reads like the rest.
-            row['payload'] = recipes.decorate(row['payload'])
+            # The people and heat dials ride on the same trip, always from the
+            # stored numbers, so a dial turned up and back lands where it began.
+            row['payload'] = recipes.view(row['payload'], request.args.get('serves'),
+                                          request.args.get('heat'))
         return jsonify(row)
 
     @app.post('/api/recipes/<int:recipe_id>/rate')

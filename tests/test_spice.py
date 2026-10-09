@@ -450,6 +450,85 @@ def test_scale_moves_spices_and_salt_together():
     assert payload['portion_lb'] == 2
 
 
+def _dialled(**overrides):
+    blend = [{'spice': 'cumin', 'tsp': 1, 'amount': '1 tsp', 'stage': 'bloom', 'step': 1},
+             {'spice': 'cayenne', 'tsp': 0.5, 'amount': '1/2 tsp', 'stage': 'bloom', 'step': 1},
+             {'spice': 'cajun', 'tsp': 2, 'amount': '2 tsp', 'stage': 'mid', 'step': 2}]
+    base = _payload(blend=blend, heat_level=4, servings=2,
+                    from_kitchen=[{'item': 'serrano', 'amount': '2, sliced'},
+                                  {'item': 'yellow onion', 'amount': '1 1/2 TBsp, grated'}],
+                    steps=[{'n': 1, 'title': 'Bloom', 'heat': 'medium', 'minutes': 6,
+                            'body': 'Add 1 tbsp oil and 1/2 tsp cayenne; cook 6 minutes at 350F.',
+                            'watch_for': ''}])
+    base.update(overrides)
+    return schema.normalise(base)
+
+
+def test_people_dial_scales_bowls_steps_and_shopping_list_together():
+    payload = schema.adjust(_dialled(), serves=4)
+    bowl = {i['name']: i['amount'] for g in payload['blend_groups'] for i in g['items']}
+    assert bowl['Cumin'] == '2 TEAsp'           # the bowls are what the card shows
+    assert payload['steps'][0]['spices'][0]['amount'] == '2 TEAsp'
+    kitchen = {k['item']: k['amount'] for k in payload['from_kitchen']}
+    assert kitchen['serrano'] == '4, sliced'
+    assert kitchen['yellow onion'] == '3 TBsp, grated'     # not "2 1 TBsp"
+    assert payload['salt']['grams'] == 12
+    body = payload['steps'][0]['body']
+    assert '2 TBsp oil' in body and '6 minutes' in body and '350F' in body
+    assert payload['scaling'] == {'serves': 4, 'base_serves': 2, 'heat': 'hot',
+                                  'base_heat': 'hot', 'heat_dial': True, 'changed': True}
+
+
+def test_heat_dial_moves_only_pure_heat():
+    payload = schema.adjust(_dialled(), heat='mild')
+    tsp = {i['spice_key']: i['tsp'] for i in payload['blend']}
+    assert tsp['cumin'] == 1 and tsp['cajun'] == 2      # flavour and blends stay
+    assert tsp['cayenne'] == round(0.5 / 3.5, 3)
+    assert payload['salt']['grams'] == 6
+    assert payload['heat_level'] == 2
+    kitchen = {k['item']: k['amount'] for k in payload['from_kitchen']}
+    assert kitchen['serrano'] == '1/2, sliced'           # a fresh chile is heat too
+    # The chile in the sentence moves; the oil beside it does not.
+    assert payload['steps'][0]['body'].startswith('Add 1 TBsp oil and heaped 1/8 TEAsp cayenne')
+
+
+def test_heat_dial_is_off_for_a_dish_with_no_chile():
+    payload = schema.adjust(_dialled(blend=[{'spice': 'cumin', 'tsp': 1, 'amount': '1 tsp'}],
+                                     from_kitchen=[]), heat='hot')
+    assert payload['scaling']['heat_dial'] is False
+    assert payload['blend'][0]['tsp'] == 1
+
+
+def test_turning_the_heat_up_hands_chili_crisp_salt_back():
+    blend = [{'spice': 'chili crisp', 'tsp': 3, 'amount': '1 tbsp', 'stage': 'garnish'}]
+    payload = schema.adjust(_dialled(blend=blend, heat_level=2), heat='hot')
+    extra_tbsp = 1 * (3.5 - 1)
+    salt_per_tbsp = rack.ALL_BY_KEY['chili_crisp'].salt_per_tbsp
+    assert payload['salt']['grams'] == round(6 - extra_tbsp * salt_per_tbsp, 1)
+
+
+def test_rounded_spoons_say_scant_or_heaped():
+    assert schema.measure_tsp(0.19) == 'scant 1/4 TEAsp'
+    assert schema.measure_tsp(0.3) == 'heaped 1/4 TEAsp'
+    assert schema.measure_tsp(1.0) == '1 TEAsp'
+    assert schema.measure_tsp(0.03) == 'a pinch'
+
+
+def test_rates_times_and_cans_are_not_quantities():
+    for text in ('7.5 g per lb', 'sear 4 minutes at 450°F', '2-inch pieces'):
+        assert schema.scale_text(text, 2) == text
+    assert schema.scale_amount('1 (14 oz) can', 2) == '2 (14 oz) can'
+
+
+def test_a_dial_turned_and_returned_lands_where_it_started():
+    import copy
+    stored = _dialled()
+    original = schema.adjust(copy.deepcopy(stored))
+    schema.adjust(copy.deepcopy(stored), serves=7, heat='mild')
+    again = schema.adjust(copy.deepcopy(stored), serves=2, heat='hot')
+    assert again == original
+
+
 # ── validating what the model returns ────────────────────────────────────────
 
 def _payload(**overrides):

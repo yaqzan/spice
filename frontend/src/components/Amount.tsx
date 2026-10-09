@@ -1,3 +1,5 @@
+import { useEffect, useRef } from 'react'
+
 // Amounts, with the two spoons pulled apart.
 //
 // "1 tsp" and "1 tbsp" differ by one character. Read at a glance, at small
@@ -24,4 +26,19 @@ export function Amount({ children }: { children: string }) {
       })}
     </>
   )
+}
+
+/** An amount that flashes when a dial changes it, so the eye catches what moved.
+ *  Not on first paint: a whole card flashing on load says nothing. */
+export function SnapAmount({ children }: { children: string }) {
+  const ref = useRef<HTMLSpanElement>(null)
+  const first = useRef(true)
+  useEffect(() => {
+    if (first.current) { first.current = false; return }
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return
+    ref.current?.animate(
+      [{ color: 'var(--accent)', transform: 'scale(1.12)' }, { transform: 'none' }],
+      { duration: 380, easing: 'cubic-bezier(0.2, 0, 0, 1)' })
+  }, [children])
+  return <span ref={ref} className="snap"><Amount>{children}</Amount></span>
 }

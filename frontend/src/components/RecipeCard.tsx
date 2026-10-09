@@ -1,9 +1,12 @@
 import { useLayoutEffect, useMemo, useRef, useState } from 'react'
-import { Amount } from './Amount'
+import { Amount, SnapAmount } from './Amount'
 import { FullRack } from './SpiceRack'
 import { mentioned, StepText } from './StepText'
 import type { Stamp } from './StepText'
-import type { BlendGroup, BlendItem, Jar, RackView, RecipePayload, Step } from '../types'
+import type { Dials } from '../api'
+import type {
+  BlendGroup, BlendItem, HeatLevel, Jar, RackView, RecipePayload, Scaling, Step,
+} from '../types'
 
 // Burner settings on a 1-10 dial, because "medium-high" is the instruction that
 // burns spice crusts. The dial numbers are the kitchen's own calibration note.
@@ -32,6 +35,53 @@ function HeatDots({ level }: { level: number }) {
         <i key={n} className={n <= level ? 'on' : ''} />
       ))}
     </span>
+  )
+}
+
+// The heat dial's three notches. Words for the cook, not spice names, so they
+// may live here; which jars each notch moves is rack.HEAT_DIAL's business.
+const HEATS: { value: HeatLevel; emoji: string; label: string }[] = [
+  { value: 'mild', emoji: '🫑', label: 'Mild' },
+  { value: 'medium', emoji: '🌶️', label: 'Medium' },
+  { value: 'hot', emoji: '🔥', label: 'Hot' },
+]
+
+/** How many people, and how hot. The server does the arithmetic (the spoon
+ *  rounding lives in schema.py and a second copy here would drift); this only
+ *  says which notch the cook wants. A notch equal to the recipe as written is
+ *  sent as blank, so the URL stays clean for the unscaled recipe. */
+function DialBar({ scaling, onChange }: { scaling: Scaling; onChange: (d: Dials) => void }) {
+  const { serves, base_serves, heat, base_heat, heat_dial, changed } = scaling
+  const people = (n: number) => onChange({ serves: n === base_serves ? undefined : n })
+  return (
+    <div className="dials">
+      <div className="dial-people" role="group" aria-label="People">
+        <button onClick={() => people(serves - 1)} disabled={serves <= 1}
+                aria-label="One fewer person">−</button>
+        <span className="dial-count"><b>{serves}</b> {serves === 1 ? 'person' : 'people'}</span>
+        <button onClick={() => people(serves + 1)} disabled={serves >= 24}
+                aria-label="One more person">+</button>
+      </div>
+      <div className="segmented dial-heat" role="group" aria-label="Heat">
+        {HEATS.map((h) => (
+          <button key={h.value} className={heat === h.value ? 'on' : ''}
+                  aria-pressed={heat === h.value} disabled={!heat_dial}
+                  onClick={() => onChange({ heat: h.value === base_heat ? undefined : h.value })}>
+            <span aria-hidden="true">{h.emoji}</span> {h.label}
+            {heat_dial && h.value === base_heat && <em>as written</em>}
+          </button>
+        ))}
+      </div>
+      {!heat_dial && <p className="hint">No chile in this one, so there is no heat to turn.</p>}
+      {changed && (
+        <p className="hint">
+          Written for {base_serves}, {base_heat}.
+          {serves > base_serves && ' Times stay the same; more food may need another batch in the pan.'}
+          {' '}<button className="link" onClick={() => onChange({ serves: undefined, heat: undefined })}>
+            Back to as written</button>
+        </p>
+      )}
+    </div>
   )
 }
 
@@ -78,7 +128,7 @@ function BlendRow({ item }: { item: BlendItem }) {
       <span className="blend-main">
         <strong>{item.name}</strong>
       </span>
-      <span className="blend-amount"><Amount>{item.amount}</Amount></span>
+      <span className="blend-amount"><SnapAmount>{item.amount}</SnapAmount></span>
       {/* Always rendered so it can animate shut as well as open; the outer
           grid track goes 0fr -> 1fr, which CSS can transition where height:auto
           cannot. */}
@@ -286,9 +336,11 @@ type Props = {
   rack: RackView | null
   onRate?: () => void
   rated?: boolean
+  /** Present where the dials can be turned; the card then draws them. */
+  onDials?: (dials: Dials) => void
 }
 
-export function RecipeCard({ payload, rack, onRate, rated }: Props) {
+export function RecipeCard({ payload, rack, onRate, rated, onDials }: Props) {
   // Jars light up in the order they enter the pan, so the badge numbers on the
   // rack match the reading order of the blend list.
   const highlights = useMemo(() => {
@@ -326,6 +378,7 @@ export function RecipeCard({ payload, rack, onRate, rated }: Props) {
         </div>
         <Times times={payload.times} />
         {payload.why_this && <p className="why">{payload.why_this}</p>}
+        {onDials && payload.scaling && <DialBar scaling={payload.scaling} onChange={onDials} />}
       </header>
 
       {payload.warnings?.length > 0 && (
@@ -355,9 +408,9 @@ export function RecipeCard({ payload, rack, onRate, rated }: Props) {
         {/* Salt gets its own panel and the biggest number on the page. Both
             recorded failures in this kitchen were seasoning-level, not
             flavour-level. */}
-        <p className="salt-big"><Amount>{payload.salt.display}</Amount></p>
+        <p className="salt-big"><SnapAmount>{payload.salt.display}</SnapAmount></p>
         {payload.salt.msg_display &&
-          <p className="salt-msg">+ <Amount>{payload.salt.msg_display}</Amount></p>}
+          <p className="salt-msg">+ <SnapAmount>{payload.salt.msg_display}</SnapAmount></p>}
         <p className="salt-when">{payload.salt.when}</p>
         <p className="salt-why">{payload.salt.rationale}</p>
       </section>
@@ -399,7 +452,7 @@ export function RecipeCard({ payload, rack, onRate, rated }: Props) {
           <ul className="kitchen">
             {byMeasure(payload.from_kitchen, (k) => k.amount).map((k, i) => (
               <li key={i} className={k.off_rack ? 'off-rack' : ''}>
-                <span>{k.item}</span><b><Amount>{k.amount}</Amount></b>
+                <span>{k.item}</span><b><SnapAmount>{k.amount}</SnapAmount></b>
               </li>
             ))}
           </ul>

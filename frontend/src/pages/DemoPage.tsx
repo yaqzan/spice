@@ -1,7 +1,8 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { api } from '../api'
 import { RecipeCard } from '../components/RecipeCard'
 import type { RackView, RecipePayload } from '../types'
+import { useDials } from '../useDials'
 
 // What a visitor off the tailnet lands on: one recipe, with the rack drawn to
 // scale and the jars it needs lit up and numbered in the order they hit the pan.
@@ -16,12 +17,18 @@ export function DemoPage() {
   const [payload, setPayload] = useState<RecipePayload | null>(null)
   const [rack, setRack] = useState<RackView | null>(null)
   const [error, setError] = useState('')
+  const [dials, setDials] = useDials()
+  const latest = useRef(0)
 
   useEffect(() => {
-    api.demo().then((d) => setPayload(d.payload))
-      .catch(() => setError('The example recipe is not available right now.'))
     api.rack().then(setRack).catch(() => setRack(null))
   }, [])
+
+  useEffect(() => {
+    const ticket = ++latest.current
+    api.demo(dials).then((d) => { if (ticket === latest.current) setPayload(d.payload) })
+      .catch(() => setError('The example recipe is not available right now.'))
+  }, [dials])
 
   return (
     <div className="page demo-page">
@@ -32,7 +39,7 @@ export function DemoPage() {
 
       {error && <p className="error">{error}</p>}
       {payload
-        ? <RecipeCard payload={payload} rack={rack} />
+        ? <RecipeCard payload={payload} rack={rack} onDials={setDials} />
         : !error && <p className="muted">Loading…</p>}
     </div>
   )

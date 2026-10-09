@@ -19,7 +19,7 @@ DEMO_PATH = Path(__file__).resolve().parent / 'demo.json'
 _DEMO_CACHE: dict = {}
 
 
-def demo_recipe():
+def demo_recipe(serves=None, heat=None):
     """The frozen example, put through the same pipeline as a live response.
 
     It must go through `normalise()` and not just `decorate()`: normalise is what
@@ -40,7 +40,7 @@ def demo_recipe():
     if raw is None:
         return None
     fresh = json.loads(json.dumps(raw))
-    return decorate(schema.normalise(fresh, out_of_stock=db.out_of_stock()))
+    return view(schema.normalise(fresh, out_of_stock=db.out_of_stock()), serves, heat)
 
 
 def decorate(payload: dict) -> dict:
@@ -58,16 +58,17 @@ def decorate(payload: dict) -> dict:
     label, grams_per_tsp = db.salt_brand()
     salt = payload.get('salt') or {}
     grams = salt.get('grams') or 0
-    salt['display'] = schema.salt_display(grams, grams_per_tsp, label)
+    honest = bool((payload.get('scaling') or {}).get('changed'))
+    salt['display'] = schema.salt_display(grams, grams_per_tsp, label, honest)
     # The rack draws this under the salt jar, where the jar is already labelled
     # with the brand — so it gets the spoons alone.
-    salt['spoons'] = schema.salt_spoons(grams, grams_per_tsp)
+    salt['spoons'] = schema.salt_spoons(grams, grams_per_tsp, honest)
     salt['brand'] = label
     if salt.get('msg_grams'):
         salt['msg_display'] = schema.salt_display(
-            salt['msg_grams'], schema.MSG_GRAMS_PER_TSP, 'MSG')
+            salt['msg_grams'], schema.MSG_GRAMS_PER_TSP, 'MSG', honest)
         salt['msg_spoons'] = schema.salt_spoons(
-            salt['msg_grams'], schema.MSG_GRAMS_PER_TSP)
+            salt['msg_grams'], schema.MSG_GRAMS_PER_TSP, honest)
     for field in ('when', 'rationale'):
         salt[field] = schema.spoonify(salt.get(field), grams_per_tsp)
     payload['salt'] = salt
@@ -88,6 +89,19 @@ def decorate(payload: dict) -> dict:
     return payload
 
 
+def view(payload: dict, serves=None, heat=None) -> dict:
+    """A stored recipe as the card shows it: both dials applied, then decorated.
+
+    Recipes saved before the people dial existed carry no `servings`; they were
+    asked for at the default, so that is where their dial starts.
+    """
+    try:
+        base = int(db.setting('servings') or 2)
+    except (TypeError, ValueError):
+        base = 2
+    return decorate(schema.adjust(payload, serves, heat, base_serves=base))
+
+
 def generate(query: str, portion_lb: float = 1.0, servings: int = 2,
              extra: str = '', model: str = None) -> dict:
     """One ask, end to end. Returns the saved recipe row, ready to render."""
@@ -98,6 +112,9 @@ def generate(query: str, portion_lb: float = 1.0, servings: int = 2,
     payload, meta = openrouter.generate(system_prompt, user_message, model,
                                         on_attempt=db.record_api_call)
     payload = schema.normalise(payload, out_of_stock=db.out_of_stock())
+    # Who it was written for, so the card's people dial knows where it starts.
+    # Ours, not the model's: the model is never asked to echo it back.
+    payload['servings'] = servings
     payload = decorate(payload)
 
     meta['query'] = query

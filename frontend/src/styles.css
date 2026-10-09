@@ -325,6 +325,21 @@ textarea { resize: vertical; }
                background: var(--line); display: block; }
 .heat-dots i.on { background: var(--hot); }
 
+/* The two dials: people, then heat. */
+.dials { margin-top: 14px; display: flex; flex-wrap: wrap; gap: 8px 12px; align-items: center; }
+.dial-people { display: inline-flex; align-items: center; gap: 4px;
+               background: var(--surface); border: 1px solid var(--line);
+               border-radius: 12px; padding: 3px; }
+.dial-people button { width: 40px; height: 40px; padding: 0; font-size: 20px;
+                      line-height: 1; border: none; background: var(--surface-2); }
+.dial-count { min-width: 76px; text-align: center; font-size: 13px; color: var(--muted); }
+.dial-count b { font-size: 18px; color: var(--text); font-variant-numeric: tabular-nums; }
+.dials .dial-heat { margin: 0; flex: 1 1 240px; flex-wrap: nowrap; }
+.dial-heat button { min-width: 0; }
+.dials .hint { flex-basis: 100%; margin-top: 0; }
+.dials .hint .link { padding: 0; font-size: 12px; }
+.snap { display: inline-block; }
+
 .times { font-size: 13px; color: var(--muted); }
 .why { font-size: 15px; color: var(--text); opacity: 0.9; font-style: italic;
        border-left: 2px solid var(--accent-dim); padding-left: 12px; }

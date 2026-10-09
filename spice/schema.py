@@ -587,24 +587,307 @@ def normalise(payload: dict, out_of_stock=None) -> dict:
     return payload
 
 
-def scale(payload: dict, factor: float) -> dict:
-    """Rescale a stored recipe to a different weight of protein.
+# ── scaling a saved recipe ───────────────────────────────────────────────────
+# Two dials on the card: how many people, and how hot. Both are applied to the
+# stored recipe on the way out, always from the original numbers, so turning the
+# dial up and back down lands exactly where it started instead of compounding
+# rounding errors.
 
-    Spice amounts scale linearly and salt scales with them; times do not, which
-    is why they are left alone. Below a quarter teaspoon the numbers stop being
-    measurable so they are shown as fractions of a pinch rather than decimals.
+HEAT_LEVELS = ('mild', 'medium', 'hot')
+# Chile dose per level, relative to mild. Perceived heat climbs slower than the
+# dose, so each notch is close to double rather than +50%.
+_HEAT_DOSE = {'mild': 1.0, 'medium': 2.0, 'hot': 3.5}
+# What the header's 1-5 heat dots read once the dial has moved.
+_HEAT_DOTS = {'mild': 2, 'medium': 3, 'hot': 4}
+
+
+def heat_name(heat_level) -> str:
+    """The model's 1-5 heat score, as the dial's word for it."""
+    level = int(_number(heat_level, 3))
+    return 'mild' if level <= 2 else 'medium' if level == 3 else 'hot'
+
+
+_NUM = r'(?:\d+\s*[½¼¾⅓⅔⅛]|[½¼¾⅓⅔⅛]|\d+\s+\d+/\d+|\d+/\d+|\d*\.\d+|\d+)'
+_UNICODE_FRACTIONS = {'½': 0.5, '¼': 0.25, '¾': 0.75, '⅓': 1 / 3, '⅔': 2 / 3, '⅛': 0.125}
+
+
+def _parse_num(text: str) -> float:
+    text = text.strip()
+    total = 0.0
+    for char, value in _UNICODE_FRACTIONS.items():
+        if char in text:
+            total += value
+            text = text.replace(char, '').strip()
+    for part in text.split():
+        if '/' in part:
+            top, bottom = part.split('/', 1)
+            total += float(top) / float(bottom) if float(bottom) else 0
+        elif part:
+            total += float(part)
+    return total
+
+
+_SPOON_UNIT = r'(?:TBsp|TEAsp|tbsps?|tsps?)'
+_SPOON_TERM = rf'(?:{_NUM}\s*{_SPOON_UNIT}|a pinch)'
+_SPOON_EXPR = rf'{_SPOON_TERM}(?:\s*\+\s*{_SPOON_TERM})*'
+_SPOON_HEAD = re.compile(rf'^\s*(?:(?:scant|heaped)\s+)?(?:{_SPOON_EXPR})(?:\s+of\b)?', re.I)
+
+
+def spoon_value(text) -> float:
+    """"1 TBsp + 1/2 TEAsp" -> 3.5. Teaspoons in whatever spoon text it is given."""
+    total = 0.0
+    for term in re.finditer(rf'({_NUM})\s*({_SPOON_UNIT})|a pinch', str(text or ''), re.I):
+        if not term.group(1):
+            total += 0.0625
+            continue
+        per = 3 if term.group(2).lower().startswith(('tbsp', 'tbs')) else 1
+        total += _parse_num(term.group(1)) * per
+    return total
+
+
+def measure_tsp(tsp) -> str:
+    """format_tsp, plus a word when the nearest real spoon is not that close.
+
+    A spoon set only has quarters, thirds and halves, so 0.19 tsp of cayenne has
+    to be said as 1/4 -- a third more than the recipe means. A cook fixes that
+    the way cooks always have, with a scant or a heaped spoon, but only if the
+    card says which. Within 12% it says nothing: that is ordinary spoon slop.
     """
-    if factor == 1:
+    shown = format_tsp(tsp)
+    value = spoon_value(shown)
+    if not shown or not value or 'pinch' in shown:
+        return shown
+    ratio = float(tsp) / value
+    if ratio < 0.88:
+        return f'scant {shown}'
+    if ratio > 1.12:
+        return f'heaped {shown}'
+    return shown
+
+
+def _fraction(value: float, unit: str, plural: str) -> str:
+    """Cups and the like: whole plus a quarter, third, half or three-quarters."""
+    whole = int(value)
+    rest = value - whole
+    steps = ((0, ''), (0.25, '1/4'), (1 / 3, '1/3'), (0.5, '1/2'), (2 / 3, '2/3'),
+             (0.75, '3/4'), (1, ''))
+    best = min(steps, key=lambda s: abs(s[0] - rest))
+    if best[0] == 1:
+        whole, best = whole + 1, (0, '')
+    number = ' '.join(p for p in (str(whole) if whole else '', best[1]) if p) or '0'
+    return f'{number} {plural if value > 1 else unit}'
+
+
+def _rescale_one(value: float, unit: str) -> str:
+    """One scaled quantity, rounded the way its unit is actually measured."""
+    low = unit.lower()
+    if re.fullmatch(_SPOON_UNIT, unit, re.I):
+        return measure_tsp(value * (3 if low.startswith('tbs') else 1))
+    if low.startswith('cup'):
+        if value < 0.25:                      # a sliver of a cup is said in spoons
+            return measure_tsp(value * 48)
+        return _fraction(value, 'cup', 'cups')
+    if low.startswith('clove'):
+        count = max(1, round(value))
+        return f'{count} clove' if count == 1 else f'{count} cloves'
+    if low in ('lb', 'lbs', 'pound', 'pounds'):
+        return f'{max(0.25, round(value * 4) / 4):g} {unit}'
+    if low in ('oz', 'ounce', 'ounces'):
+        return f'{max(0.5, round(value * 2) / 2 if value < 2 else round(value)):g} {unit}'
+    if low in ('g', 'gram', 'grams'):
+        # Seasoning-sized grams keep a decimal so spoonify() converts them
+        # accurately on the way out; a weight of meat is fine to the nearest 5.
+        return (f'{round(value, 1):g} {unit}' if value <= _SEASONING_GRAMS
+                else f'{max(5, round(value / 5) * 5):g} {unit}')
+    if low == 'kg':
+        return f'{round(value, 2):g} {unit}'
+    if low == 'ml':
+        return f'{max(5, round(value / 5) * 5):g} {unit}'
+    return f'{round(value, 2):g} {unit}'
+
+
+_SCALE_UNIT = r'(?:TBsp|TEAsp|tbsps?|tsps?|cups?|cloves?|lbs?|pounds?|oz|ounces?|g|grams?|kg|ml)'
+# A number is NOT a quantity to scale when it is a rate ("7.5 g per lb", the
+# salt doctrine), or the size printed on a can.
+_NOT_A_QUANTITY = (r'(?!\s*(?:/|per\b|a\s+(?:lb|pound)\b|of\s+(?:the\s+)?meat\b)'
+                   r'|\)?\s*(?:cans?|tins?|jars?|packs?|packets?|packages?|bags?|blocks?|'
+                   r'cartons?|bottles?)\b)')
+_MEASURE = re.compile(
+    rf'(?<![\w/.])(?:(?P<spoons>{_SPOON_EXPR})(?![a-z])'
+    rf'|(?P<lo>{_NUM})(?:\s*(?:-|–|to)\s*(?P<hi>{_NUM}))?\s*(?P<unit>{_SCALE_UNIT})(?![a-z]))'
+    + _NOT_A_QUANTITY, re.I)
+# "1 medium onion", "2 (14 oz) cans": a bare count at the start of an amount.
+# The lookaheads stop it settling for the "1" of "1 1/2 TBsp" when the whole
+# number turns out to be a measure.
+_LEADING_COUNT = re.compile(rf'^(\s*)({_NUM})(?:\s*(?:-|–|to)\s*({_NUM}))?'
+                            rf'(?!\s*(?:{_SCALE_UNIT}\b|[\d½¼¾⅓⅔⅛]))(?![/.%°])')
+
+
+def _count(value: float) -> str:
+    """Onions, eggs, chiles: whole and halves, and never none of them."""
+    halves = max(1, round(value * 2))
+    whole, half = divmod(halves, 2)
+    return (f'{whole} 1/2' if whole else '1/2') if half else str(whole)
+
+
+def _heat_names(blend: list) -> re.Pattern:
+    """The spellings of every dial jar this recipe uses, for spotting one in prose."""
+    names = set()
+    for item in blend:
+        spice = rack.ALL_BY_KEY.get(item.get('spice_key'))
+        if spice and spice.key in rack.HEAT_DIAL:
+            names.add(spice.name.split('(')[0].strip())
+            names.update(spice.aka)
+    alternatives = '|'.join(re.escape(n) for n in sorted(names, key=len, reverse=True) if n)
+    return re.compile(rf'^\s+(?:of\s+)?(?:the\s+)?(?:{alternatives})\b'
+                      if alternatives else r'(?!)', re.I)
+
+
+def scale_text(text, factor: float, heat: float = 1.0, heat_names=None) -> str:
+    """Rescale every quantity written into a sentence; leave times and temperatures.
+
+    "1 TBsp oil" doubles. "cook 6 minutes", "350°F", "2-inch pieces" and "7.5 g
+    per lb" do not: none of them is an amount of food. A quantity sitting right
+    before a dial chile ("1/2 TEAsp cayenne") also takes the heat factor.
+    """
+    text = str(text or '')
+    if not text or (factor == 1 and heat == 1):
+        return text
+
+    def convert(match):
+        mine = factor
+        if heat != 1 and heat_names is not None and heat_names.match(text[match.end():]):
+            mine *= heat
+        if mine == 1:
+            return match.group(0)
+        if match.group('spoons'):
+            if not re.search(r'\d', match.group('spoons')):
+                return match.group(0)         # "a pinch" in prose stays a pinch
+            return measure_tsp(spoon_value(match.group('spoons')) * mine)
+        unit = match.group('unit')
+        low = _parse_num(match.group('lo')) * mine
+        if match.group('hi'):
+            high = _parse_num(match.group('hi')) * mine
+            return f'{_rescale_one(low, unit)} to {_rescale_one(high, unit)}'
+        return _rescale_one(low, unit)
+
+    return _MEASURE.sub(convert, text)
+
+
+def scale_amount(text, factor: float) -> str:
+    """A shopping-list amount: its leading count, then any measure inside it."""
+    text = str(text or '')
+    if factor == 1 or not text:
+        return text
+    lead = _LEADING_COUNT.match(text)
+    if lead:
+        counted = _count(_parse_num(lead.group(2)) * factor)
+        if lead.group(3):
+            counted += f' to {_count(_parse_num(lead.group(3)) * factor)}'
+        return lead.group(1) + counted + scale_text(text[lead.end():], factor)
+    return scale_text(text, factor)
+
+
+def _blend_amount(item: dict, factor: float) -> str:
+    """A jar's new amount, worked out from the exact `tsp` rather than the label.
+
+    The label is already rounded to a spoon; scaling that would scale the
+    rounding error with it. Any note after the spoons ("cracked", "crushed
+    between your palms") rides along.
+    """
+    amount = str(item.get('amount') or '')
+    tsp = _number(item.get('tsp'))
+    head = _SPOON_HEAD.match(amount)
+    if tsp > 0 and (head or not amount):
+        tail = amount[head.end():].strip(' ,;-') if head else ''
+        new = measure_tsp(tsp * factor)
+        return f'{new}, {tail}' if tail else new
+    return scale_amount(amount, factor)
+
+
+def rescale(payload: dict, factor: float = 1.0, heat: float = 1.0) -> dict:
+    """Scale a stored recipe by `factor` people, and its dial chiles by `heat` on top.
+
+    Times stay put: a bigger batch takes as long per batch, it just takes more
+    of them. Salt scales with the food; a heat change that moves a salted chile
+    sauce hands the difference back to the salt.
+    """
+    if factor == 1 and heat == 1:
         return payload
-    for item in payload.get('blend', []):
-        tsp = float(item.get('tsp') or 0) * factor
-        item['tsp'] = round(tsp, 3)
-        item['amount'] = format_tsp(tsp)
+    blend = [item for item in payload.get('blend') or [] if isinstance(item, dict)]
+    names = _heat_names(blend)
     salt = payload.get('salt') or {}
-    for field in ('grams', 'msg_grams'):
-        if salt.get(field):
-            salt[field] = round(float(salt[field]) * factor, 1)
-    payload['portion_lb'] = round(float(payload.get('portion_lb') or 1) * factor, 2)
+    salt_back = 0.0
+    for item in blend:
+        dial = item.get('spice_key') in rack.HEAT_DIAL
+        mine = factor * (heat if dial else 1)
+        before = _number(item.get('tsp'))
+        item['amount'] = _blend_amount(item, mine)
+        item['tsp'] = round(before * mine, 3)
+        spice = rack.ALL_BY_KEY.get(item.get('spice_key'))
+        if dial and spice and spice.salt_per_tbsp:
+            salt_back += before * factor * (heat - 1) / 3 * spice.salt_per_tbsp
+
+    by_key = {item.get('spice_key'): item for item in blend}
+    for group in payload.get('blend_groups') or []:
+        group['items'] = [by_key.get(i.get('spice_key'), i) for i in group.get('items') or []]
+    for step in payload.get('steps') or []:
+        if not isinstance(step, dict):
+            continue
+        for chip in step.get('spices') or []:
+            source = by_key.get(chip.get('spice_key'))
+            if source:
+                chip['amount'] = source['amount']
+        for field in ('body', 'watch_for'):
+            step[field] = scale_text(step.get(field), factor, heat, names)
+
+    for row in payload.get('from_kitchen') or []:
+        if isinstance(row, dict):
+            chile = rack.is_fresh_chile(row.get('item'))
+            row['amount'] = scale_amount(row.get('amount'), factor * (heat if chile else 1))
+
+    if salt.get('grams'):
+        scaled = float(salt['grams']) * factor
+        # Never below a quarter of the dish's own salt: a chile sauce turned all
+        # the way up must not be allowed to delete the seasoning.
+        salt['grams'] = round(max(scaled - salt_back, scaled * 0.25), 1)
+    if salt.get('msg_grams'):
+        salt['msg_grams'] = round(float(salt['msg_grams']) * factor, 1)
+    for field in ('when', 'rationale'):
+        salt[field] = scale_text(salt.get(field), factor)
+    payload['salt'] = salt
+    for field in ('salt_check', 'serve_with'):
+        payload[field] = scale_text(payload.get(field), factor)
+    payload['portion_lb'] = round(_number(payload.get('portion_lb'), 1) * factor, 2)
+    return payload
+
+
+def scale(payload: dict, factor: float) -> dict:
+    """Rescale a stored recipe to a different weight of protein (`?scale=`)."""
+    return rescale(payload, factor)
+
+
+def adjust(payload: dict, serves=None, heat=None, base_serves: int = 2) -> dict:
+    """The card's two dials, applied, plus what the card needs to draw them.
+
+    `scaling` always comes back, dial moved or not, so the controls render from
+    what the server says rather than from a guess in TypeScript.
+    """
+    base = int(_number(payload.get('servings'), base_serves)) or base_serves
+    people = base if serves in (None, '') else max(1, min(24, int(_number(serves, base))))
+    base_heat = heat_name(payload.get('heat_level'))
+    dial = any(i.get('spice_key') in rack.HEAT_DIAL for i in payload.get('blend') or []
+               if isinstance(i, dict)) or any(
+        rack.is_fresh_chile(r.get('item')) for r in payload.get('from_kitchen') or []
+        if isinstance(r, dict))
+    level = heat if (dial and heat in HEAT_LEVELS) else base_heat
+    heat_factor = _HEAT_DOSE[level] / _HEAT_DOSE[base_heat]
+    rescale(payload, people / base, heat_factor)
+    if level != base_heat:
+        payload['heat_level'] = _HEAT_DOTS[level]
+    payload['scaling'] = {'serves': people, 'base_serves': base, 'heat': level,
+                          'base_heat': base_heat, 'heat_dial': dial,
+                          'changed': people != base or level != base_heat}
     return payload
 
 
@@ -738,7 +1021,7 @@ def format_tsp(tsp) -> str:
     return _spoons(tsp, TSP)
 
 
-def salt_spoons(grams: float, grams_per_tsp: float) -> str:
+def salt_spoons(grams: float, grams_per_tsp: float, honest: bool = False) -> str:
     """Grams -> spoons of the salt actually on this shelf.
 
     The single most valuable conversion in the app. A recipe written in teaspoons
@@ -747,10 +1030,12 @@ def salt_spoons(grams: float, grams_per_tsp: float) -> str:
     """
     if not grams:
         return ''
-    return format_tsp(grams / grams_per_tsp)
+    # A rescaled recipe says scant / heaped when the spoon is off (measure_tsp).
+    return (measure_tsp if honest else format_tsp)(grams / grams_per_tsp)
 
 
-def salt_display(grams: float, grams_per_tsp: float, label: str) -> str:
+def salt_display(grams: float, grams_per_tsp: float, label: str,
+                 honest: bool = False) -> str:
     """The same conversion, with the brand named — what the salt panel shows.
 
     The gram figure used to lead this line. It no longer appears anywhere the
@@ -759,7 +1044,7 @@ def salt_display(grams: float, grams_per_tsp: float, label: str) -> str:
     number actionable. Grams stay where they are useful — inside `salt.grams`,
     as the brand-independent truth the app converts from.
     """
-    spoons = salt_spoons(grams, grams_per_tsp)
+    spoons = salt_spoons(grams, grams_per_tsp, honest)
     return f'{spoons} {label}' if spoons else ''
 
 

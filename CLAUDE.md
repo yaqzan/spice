@@ -51,6 +51,8 @@ loopback, so it opens the spend to the internet.
 - **`rack.STAGES` is chronological; `schema.group_blend()` numbers the bowls from it.** A stage is
   a physical premix bowl, so reordering the tuple reorders the counter. Steps name a bowl instead
   of re-listing spices.
+- **The people and heat dials are applied server-side from the stored numbers**, never compounded.
+  Only `rack.HEAT_DIAL` jars and fresh chiles move with heat. See scaling.md.
 - **Every jar is placed exactly once**, checked at boot. Layout writes are all-or-nothing.
 - **A jar is the same size on every shelf.** Each SVG caps width by jar count.
 - **Never write a relative date without the absolute one beside it.** The prompt states today's
@@ -79,6 +81,7 @@ SQLite -> `api.py` -> SVG rack + recipe card.
 
 - [rack.md](.claude/docs/rack.md): shelves, jar drawing, name resolution
 - [prompt.md](.claude/docs/prompt.md): every prompt rule and its evidence
+- [scaling.md](.claude/docs/scaling.md): people and heat dials, scant/heaped rounding, what scales
 - [audit.md](.claude/docs/audit.md): review of the chat project this replaced
 - [vault.md](.claude/docs/vault.md): the Obsidian rating reminder
 - [theme.md](.claude/docs/theme.md): colour schemes, the theme setting, the preview tool

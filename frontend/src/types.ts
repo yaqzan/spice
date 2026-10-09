@@ -86,6 +86,19 @@ export type Salt = {
   brand: string
 }
 
+export type HeatLevel = 'mild' | 'medium' | 'hot'
+
+/** Where the card's two dials sit, and where the recipe as written sits. */
+export type Scaling = {
+  serves: number
+  base_serves: number
+  heat: HeatLevel
+  base_heat: HeatLevel
+  /** False when nothing in the dish is pure heat, so the heat dial is off. */
+  heat_dial: boolean
+  changed: boolean
+}
+
 export type RecipePayload = {
   title: string
   cuisine: string
@@ -105,6 +118,8 @@ export type RecipePayload = {
   serve_with: string
   leftovers: string
   warnings: string[]
+  servings?: number
+  scaling?: Scaling
 }
 
 export type Rating = {

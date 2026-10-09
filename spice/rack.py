@@ -23,6 +23,7 @@ grab followed by a right-hand grab. Both racks are 4 rows of 7.
 
 from __future__ import annotations
 
+import re
 from typing import NamedTuple
 
 # ── how a spice behaves ──────────────────────────────────────────────────────
@@ -802,6 +803,34 @@ ALL_BY_KEY = {**SPICE_BY_KEY, **STOVE_BY_KEY, **FRIDGE_BY_KEY}
 PRE_SALTED = tuple(s for s in ALL_BY_KEY.values() if s.salt_per_tbsp)
 
 
+# ── the heat dial ────────────────────────────────────────────────────────────
+# The jars the card's Mild / Medium / Hot dial is allowed to move. Only pure
+# heat: turning one of these changes how hot the dish is and little else.
+#
+# Left off on purpose, though they score heat above 0: every blend (Cajun, jerk,
+# berbere carry the dish's whole flavour, and doubling Cajun doubles its paprika
+# and garlic too), Kashmiri and ancho (colour and body, not burn), mustard and
+# grains of paradise (a different axis), doubanjiang and gochujang (the base of
+# the sauce, and salted). Chili crisp and chili garlic sauce are salted but are
+# condiments people dose for heat, so the dial moves them and hands the
+# difference back to the salt (`salt_per_tbsp`).
+HEAT_DIAL = ('cayenne', 'crushed_chili', 'chipotle', 'gochugaru', 'silk_chili',
+             'black_urfa_chili', 'chili_garlic_sauce', 'chili_crisp')
+
+# Fresh and bottled chiles from the shopping list, which the dial also moves.
+# Matched on the item name; "sweet chili sauce" and "chili powder" are not heat.
+FRESH_CHILE = re.compile(
+    r'\b(?:jalape[nñ]os?|serranos?|habaneros?|scotch bonnets?|bird\'?s?[- ]eye|'
+    r'fresnos?|thai (?:red |green )?chil(?:e|i|li)e?s?|'
+    r'(?:fresh |green |red |dried |whole )chil(?:e|i|li)e?s?(?! (?:powder|flakes))|'
+    r'chil(?:e|i|li) oil|sriracha|sambal(?: oelek)?|hot sauce)\b', re.I)
+
+
+def is_fresh_chile(item: str) -> bool:
+    name = str(item or '')
+    return bool(FRESH_CHILE.search(name)) and not re.search(r'\bsweet\b', name, re.I)
+
+
 # ── where the jars sit ───────────────────────────────────────────────────────
 # Seed layout only — the live one is in the database. Row 1 is eye level and
 # arm's reach; row 4 is the stretch. Left rack = savoury foundation, right rack =
@@ -1013,6 +1042,9 @@ def validate_default_layout() -> None:
     unknown = set(placed) - set(ALL_BY_KEY)
     if unknown:
         raise ValueError(f'unknown jar in the default layout: {sorted(unknown)}')
+    stray = set(HEAT_DIAL) - set(ALL_BY_KEY)
+    if stray:
+        raise ValueError(f'unknown jar on the heat dial: {sorted(stray)}')
 
 
 def wall_racks() -> tuple:

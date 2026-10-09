@@ -6,7 +6,9 @@
   exists.** The frontend renders the jars it's sent; no spice name anywhere in `frontend/src`.
   Don't add one: a second list drifts silently and the visual points at a missing jar.
 - `validate_default_layout()` runs on every boot and refuses to start if a spice is placed twice,
-  missing, or unknown.
+  missing, or unknown, or if `HEAT_DIAL` names a jar that doesn't exist.
+- `HEAT_DIAL` (which jars the card's heat dial may move) and `FRESH_CHILE` live here too, for the
+  same reason. See [scaling.md](scaling.md).
 
 ## Where the jars sit
 
