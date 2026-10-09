@@ -90,7 +90,12 @@ p { margin: 0 0 10px; }
   .tabs {
     bottom: auto;
     top: calc(100lvh - var(--tabs-h) - 1px - env(safe-area-inset-bottom));
+    /* Own compositing layer: without it iOS skipped painting the labels on first
+       load (icons drew, text didn't) until a route change forced a repaint. */
+    transform: translateZ(0);
+    -webkit-backdrop-filter: blur(12px);
   }
+  .tabs a { -webkit-text-fill-color: currentColor; }
 }
 
 .tabs a {
