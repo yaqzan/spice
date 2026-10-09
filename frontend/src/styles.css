@@ -35,10 +35,7 @@ body {
   overscroll-behavior-y: none;
 }
 
-/* The extra pixel keeps the document scrollable on every page. In iOS standalone
-   mode a position:fixed bar lands higher on a page that doesn't scroll (short Ask
-   page) than on one that does (Cooked), and the scrolling position is the right one. */
-.app { display: flex; flex-direction: column; min-height: calc(100% + 1px); }
+.app { display: flex; flex-direction: column; min-height: 100%; }
 
 /* Home-screen app runs black-translucent (viewport-fit=cover), so the page sits
    under the clock and notch: push it down by the inset, and keep a scrim there
