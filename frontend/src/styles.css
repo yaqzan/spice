@@ -144,7 +144,11 @@ body {
   overscroll-behavior-y: none;
 }
 
-.app { display: flex; flex-direction: column; min-height: 100%; }
+/* The extra pixel keeps the document scrollable on every page. In iOS standalone
+   a page that doesn't scroll (short Ask page) gets a viewport ~47pt short of the
+   screen: a bottom:0 bar floats high, and anything lower is clipped. A page that
+   scrolls (Cookbook) gets the full screen. */
+.app { display: flex; flex-direction: column; min-height: calc(100% + 1px); }
 
 /* Home-screen app runs black-translucent (viewport-fit=cover), so the page sits
    under the clock and notch: push it down by the inset, and keep a scrim there
@@ -190,21 +194,6 @@ p { margin: 0 0 10px; }
   border-top: 1px solid var(--line);
   padding-bottom: env(safe-area-inset-bottom);
   z-index: 20;
-}
-
-/* iOS standalone hands the page a layout viewport that is sometimes ~47pt short
-   on Ask, so bottom:0 floats the bar above the home indicator with a gap under it.
-   Pin the top edge to the large viewport height instead. */
-@supports (height: 100lvh) {
-  .tabs {
-    bottom: auto;
-    top: calc(100lvh - var(--tabs-h) - 1px - env(safe-area-inset-bottom));
-    /* Own compositing layer: without it iOS skipped painting the labels on first
-       load (icons drew, text didn't) until a route change forced a repaint. */
-    transform: translateZ(0);
-    -webkit-backdrop-filter: blur(12px);
-  }
-  .tabs a { -webkit-text-fill-color: currentColor; }
 }
 
 .tabs a {
