@@ -566,7 +566,7 @@ def build_system_prompt() -> str:
 **Today is {_today()}.**
 
 {COOK_PROFILE}
-Heat tolerance: **{heat_tolerance}/5** — {'genuinely spicy food is the point' if heat_tolerance >= 4 else 'moderate heat'}.
+{heat_clause(heat_tolerance)}
 
 {_acid_clause(settings.get('acid_policy', 'background'))}
 
@@ -618,6 +618,28 @@ three cups of rice, and one was a steak whose problem was doneness.
 
 {OUTPUT_RULES}
 """
+
+
+def heat_clause(heat_tolerance: int) -> str:
+    """Heat is the dish's own, and the card's dial does the rest.
+
+    Recipes used to be pushed to the cook's tolerance, so a korma came out hot
+    and the card could not say what it was meant to taste like. Now the model
+    names the dish's level and writes to it; the cook turns the dial himself.
+    The dial can only move pure-heat jars, so the heat has to live in them.
+    """
+    dial = ', '.join(rack.ALL_BY_KEY[k].name for k in rack.HEAT_DIAL)
+    lean = ('genuinely spicy food is the point' if heat_tolerance >= 4
+            else 'moderate heat')
+    return (f"**Heat is the dish's own.** Set `spice_level` to how hot this dish is "
+            f"meant to be in its own cuisine, and write every chile amount at exactly "
+            f"that level. Do not push a mild dish hot to suit the cook: the card has a "
+            f"Mild / Medium / Hot dial and he turns it himself. His tolerance is "
+            f"**{heat_tolerance}/5** ({lean}), which only decides a dish that honestly "
+            f"sits between two levels: take the hotter one.\n\n"
+            f"The dial moves only these jars, plus fresh chiles: {dial}. Carry the "
+            f"dish's heat in them where the cuisine allows, rather than leaning on a "
+            f"blend's chile, which the dial cannot reach.")
 
 
 def build_user_message(query: str, portion_lb: float, servings: int, extra: str = '') -> str:

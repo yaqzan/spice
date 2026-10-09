@@ -29,7 +29,7 @@ RECIPE_SCHEMA = {
     'type': 'object',
     'additionalProperties': False,
     'required': ['title', 'cuisine', 'protein', 'portion_lb', 'confidence', 'why_this',
-                 'heat_level', 'pan', 'times', 'blend', 'salt', 'from_kitchen',
+                 'heat_level', 'spice_level', 'pan', 'times', 'blend', 'salt', 'from_kitchen',
                  'steps', 'salt_check', 'serve_with', 'leftovers'],
     'properties': {
         'title': {'type': 'string',
@@ -54,6 +54,14 @@ RECIPE_SCHEMA = {
                                     'the rotation or dates. Never write about the cook in '
                                     'the third person.'},
         'heat_level': {'type': 'integer', 'minimum': 1, 'maximum': 5},
+        'spice_level': {'type': 'string', 'enum': ['mild', 'medium', 'hot'],
+                        'description': 'How hot this dish is MEANT to be, the way its own '
+                                       'cuisine makes it: korma mild, kung pao medium, '
+                                       'vindaloo hot. Every chile amount is written at '
+                                       'exactly this level; the card has a Mild / Medium / '
+                                       'Hot dial that scales the chile from here. A dish '
+                                       'with no chile is mild. heat_level must agree: '
+                                       'mild 1-2, medium 3, hot 4-5.'},
         'pan': {'type': 'string',
                 'description': 'Which pan and why, e.g. "carbon steel wok - fast, very hot '
                                'centre" or "cast iron - holds heat through three batches".'},
@@ -183,7 +191,11 @@ RECIPE_SCHEMA = {
 # `steps` entirely. Parsing succeeds, so without an explicit shape check the
 # fallback chain never fires and the wrong object gets stored and rendered.
 
-REQUIRED_TOP = tuple(RECIPE_SCHEMA['required'])
+# Strict mode makes every property required, but a missing `spice_level` is
+# derived from `heat_level` in normalise(), so it is no reason to spend another
+# call on the fallback chain.
+DERIVED_TOP = ('spice_level',)
+REQUIRED_TOP = tuple(f for f in RECIPE_SCHEMA['required'] if f not in DERIVED_TOP)
 
 # Near-misses seen from real models, mapped back onto the contract. Cheap to
 # repair and not worth spending another API call on.
@@ -549,6 +561,11 @@ def normalise(payload: dict, out_of_stock=None) -> dict:
                 f"{item['name']} is a finishing spice and is listed for "
                 f"{item['stage'].replace('_', ' ')}. Heat destroys it.")
 
+    # The dish's own heat, which the card's dial starts from. Recipes saved
+    # before the field existed, or a model that skips it, fall back to the dots.
+    if payload.get('spice_level') not in HEAT_LEVELS:
+        payload['spice_level'] = heat_name(payload.get('heat_level'))
+
     payload['blend'] = resolved
     payload['blend_groups'] = group_blend(resolved)
     payload['warnings'] = warnings
@@ -875,7 +892,8 @@ def adjust(payload: dict, serves=None, heat=None, base_serves: int = 2) -> dict:
     """
     base = int(_number(payload.get('servings'), base_serves)) or base_serves
     people = base if serves in (None, '') else max(1, min(24, int(_number(serves, base))))
-    base_heat = heat_name(payload.get('heat_level'))
+    base_heat = (payload['spice_level'] if payload.get('spice_level') in HEAT_LEVELS
+                 else heat_name(payload.get('heat_level')))
     dial = any(i.get('spice_key') in rack.HEAT_DIAL for i in payload.get('blend') or []
                if isinstance(i, dict)) or any(
         rack.is_fresh_chile(r.get('item')) for r in payload.get('from_kitchen') or []

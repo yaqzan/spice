@@ -68,14 +68,14 @@ function DialBar({ scaling, onChange }: { scaling: Scaling; onChange: (d: Dials)
                   aria-pressed={heat === h.value} disabled={!heat_dial}
                   onClick={() => onChange({ heat: h.value === base_heat ? undefined : h.value })}>
             <span aria-hidden="true">{h.emoji}</span> {h.label}
-            {heat_dial && h.value === base_heat && <em>as written</em>}
+            {heat_dial && h.value === base_heat && <em>dish default</em>}
           </button>
         ))}
       </div>
       {!heat_dial && <p className="hint">No chile in this one, so there is no heat to turn.</p>}
       {changed && (
         <p className="hint">
-          Written for {base_serves}, {base_heat}.
+          Written for {base_serves}; this dish is meant {base_heat}.
           {serves > base_serves && ' Times stay the same; more food may need another batch in the pan.'}
           {' '}<button className="link" onClick={() => onChange({ serves: undefined, heat: undefined })}>
             Back to as written</button>

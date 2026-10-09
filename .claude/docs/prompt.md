@@ -283,6 +283,14 @@ cook poured the sauce over it. The prompt now requires the removing step to
 name the plate and the returning step to name where it comes from. Recipe 26's
 step 4 was patched by hand on 2026-10-08.
 
+**Heat is the dish's own; the card's dial does the rest** (owner, 2026-10-09). Recipes used to
+be pushed to `heat_tolerance` 4/5, so a korma came out hot and nothing said what it was meant to
+taste like. Now the model sets `spice_level` (mild/medium/hot, the dish's level in its own cuisine)
+and writes every chile amount at it; tolerance only breaks a tie between two levels
+(`prompt.heat_clause()`). It is told to carry heat in `rack.HEAT_DIAL` jars, the only ones the dial
+can move. A missing `spice_level` is derived from `heat_level`, not a shape error (`DERIVED_TOP`),
+so it never bills a retry. See scaling.md.
+
 **`confidence`, not a predicted score.** A model asked to predict its own
 rating says 8 or 9 every time. `proven` / `well_trodden` / `adaptation` /
 `experiment` carries actual information; prompt says `experiment` is a good

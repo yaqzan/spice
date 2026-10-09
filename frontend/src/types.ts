@@ -107,6 +107,8 @@ export type RecipePayload = {
   confidence: 'proven' | 'well_trodden' | 'adaptation' | 'experiment'
   why_this: string
   heat_level: number
+  /** How hot the dish is meant to be; the heat dial starts here. */
+  spice_level?: HeatLevel
   pan: string
   times: { prep_min: number; marinate_min: number; cook_min: number; total_min: number }
   blend: BlendItem[]

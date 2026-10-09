@@ -507,6 +507,27 @@ def test_turning_the_heat_up_hands_chili_crisp_salt_back():
     assert payload['salt']['grams'] == round(6 - extra_tbsp * salt_per_tbsp, 1)
 
 
+def test_the_dish_default_heat_is_the_models_spice_level():
+    # A korma is mild however hot the dots say; the dial starts where the dish is meant to be.
+    payload = schema.adjust(_dialled(spice_level='medium', heat_level=4), heat='hot')
+    assert payload['scaling']['base_heat'] == 'medium'
+    assert payload['blend'][1]['tsp'] == round(0.5 * 3.5 / 2, 3)
+
+
+def test_a_missing_spice_level_falls_back_without_a_retry():
+    payload = _payload(blend=[{'spice': 'cayenne', 'tsp': 1, 'amount': '1 tsp'}],
+                       steps=[{'n': 1, 'title': 'x', 'body': 'x'}])
+    assert 'spice_level' not in payload
+    assert schema.shape_errors(payload) == []        # no second billed call for it
+    assert schema.normalise(payload)['spice_level'] == 'hot'   # from heat_level 4
+
+
+def test_prompt_asks_for_the_dish_own_heat_and_names_the_dial_jars():
+    text = prompt.build_system_prompt()
+    assert '`spice_level`' in text and 'Cayenne' in text and 'Chili Crisp' in text
+    assert 'spice_level' in schema.RECIPE_SCHEMA['required']
+
+
 def test_rounded_spoons_say_scant_or_heaped():
     assert schema.measure_tsp(0.19) == 'scant 1/4 TEAsp'
     assert schema.measure_tsp(0.3) == 'heaped 1/4 TEAsp'

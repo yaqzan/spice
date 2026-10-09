@@ -46,8 +46,9 @@ when the true amount is >12% under the nearest spoon and **heaped** when >12% ov
   quantity in prose sitting right before a dial jar's name. Blends (Cajun, jerk, berbere), colour
   chiles (Kashmiri, ancho), mustard, and salted bases (doubanjiang, gochujang) stay put: moving them
   changes the dish, not the heat. Reasons are in the `HEAT_DIAL` comment.
-- **Base level** comes from the model's `heat_level`: 1-2 mild, 3 medium, 4-5 hot. With
-  `heat_tolerance` 4 most recipes are written hot.
+- **Base level ("dish default") is the model's `spice_level`**: how hot the dish is meant to be,
+  with the chile written at that level (prompt.md). Recipes saved before 2026-10-09 (and the frozen
+  demo) have none and fall back to `heat_level`: 1-2 mild, 3 medium, 4-5 hot.
 - **Dose per notch:** mild 1, medium 2, hot 3.5 (perceived heat climbs slower than dose).
 - Turning a **salted** dial jar (chili crisp, chili garlic) hands the extra salt back:
   `salt.grams` drops by the extra tbsp x `salt_per_tbsp`, floored at a quarter of the dish's salt.
