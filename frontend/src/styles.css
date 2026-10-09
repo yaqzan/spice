@@ -24,7 +24,7 @@
 
 * { box-sizing: border-box; }
 
-html, body, #root { height: 100%; }
+html, body, #root { height: 100%; overflow: hidden; }
 
 body {
   margin: 0;
@@ -35,15 +35,21 @@ body {
   overscroll-behavior-y: none;
 }
 
-.app { display: flex; flex-direction: column; min-height: 100%; }
+/* The app is exactly one screen tall and <main> scrolls inside it, with the tab
+   bar as a normal flex child. A position:fixed bar sits at a different height in
+   iOS standalone mode on pages that scroll than on pages that don't (short Ask
+   page vs long Cooked page), so the bar must not depend on document scroll. */
+.app { display: flex; flex-direction: column; height: 100%; height: 100dvh; }
 
 /* Home-screen app runs black-translucent (viewport-fit=cover), so the page sits
    under the clock and notch: push it down by the inset, and keep a scrim there
    so text scrolling past doesn't collide with the status bar. */
 main {
-  flex: 1;
+  flex: 1; min-height: 0;
+  overflow-y: auto; overscroll-behavior-y: none;
+  -webkit-overflow-scrolling: touch;
   padding-top: env(safe-area-inset-top);
-  padding-bottom: calc(var(--tabs-h) + env(safe-area-inset-bottom) + 16px);
+  padding-bottom: 16px;
 }
 
 body::before {
@@ -74,7 +80,7 @@ p { margin: 0 0 10px; }
 /* ── tab bar ─────────────────────────────────────────────────────────────── */
 
 .tabs {
-  position: fixed; bottom: 0; left: 0; right: 0;
+  flex: none;
   display: grid; grid-template-columns: repeat(4, 1fr);
   background: rgba(22, 19, 15, 0.94);
   backdrop-filter: blur(12px);
@@ -513,7 +519,7 @@ textarea { resize: vertical; }
   /* A fixed bar spanning a 1600px window looks like a mistake. Float it as a
      pill over the content instead. */
   .tabs {
-    left: 50%; right: auto; transform: translateX(-50%);
+    position: fixed; left: 50%; right: auto; transform: translateX(-50%);
     bottom: 18px; width: 420px; border-radius: 999px;
     border: 1px solid var(--line);
     box-shadow: 0 8px 28px rgba(0, 0, 0, 0.45);
