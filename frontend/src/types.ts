@@ -164,6 +164,7 @@ export type SettingsResponse = {
   settings: Settings
   salt_brands: Record<string, { label: string; grams_per_tsp: number }>
   has_key: boolean
+  themes: Record<string, { label: string; pitch: string }>
 }
 
 // /api/health is the app's only public statement about who is asking. To a
@@ -183,4 +184,6 @@ export type Health = {
   daily_limit?: number
   /** False while the SPICE_OPEN development override is what let you in. */
   via_tailnet?: boolean
+  /** Colour scheme key; public, it is how the site looks. */
+  theme?: string
 }

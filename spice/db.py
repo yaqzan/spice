@@ -23,7 +23,7 @@ import json
 import sqlite3
 import threading
 
-from . import config, rack
+from . import config, rack, themes
 
 SCHEMA_VERSION = 1
 
@@ -178,6 +178,9 @@ DEFAULT_SETTINGS = {
     # model fumbles the JSON shape and the fallback chain retries. 0 disables.
     # Guards against a retry loop as much as against a stranger.
     'daily_ask_limit': '60',
+
+    # Colour scheme, a key of themes.THEMES. Public: it is the site's look.
+    'theme': themes.DEFAULT,
 }
 
 # Settings that existed once and must not linger. `access_salt` and `access_hash`

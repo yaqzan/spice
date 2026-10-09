@@ -14,7 +14,7 @@ import threading
 from flask import Flask, jsonify, request, send_from_directory
 from werkzeug.serving import make_server
 
-from . import auth, config, db, openrouter, rack, recipes, schema
+from . import auth, config, db, openrouter, rack, recipes, schema, themes
 
 VERSION = '1.0.0'
 
@@ -94,6 +94,10 @@ def create_app():
             count = rated = 0
             ok = False
 
+        # The colour scheme goes to everyone: it is how the site looks, and this
+        # is the one call every page makes on boot.
+        theme = themes.current(db.setting('theme'))
+
         # This route is unauthenticated by necessity (the watchdog polls it over
         # the public hostname), so to a stranger it says only that a service is
         # alive. Which model is configured and how much has been cooked here are
@@ -105,7 +109,7 @@ def create_app():
         if not authed():
             return jsonify({'status': 'ok' if ok else 'error',
                             'authed': False, 'jars': len(rack.SPICES),
-                            'version': VERSION})
+                            'theme': theme, 'version': VERSION})
 
         return jsonify({
             'status': 'ok' if ok else 'error',
@@ -122,6 +126,7 @@ def create_app():
             # worth being able to see from the settings screen, because it is the
             # one state where the app is open to more than a peer.
             'via_tailnet': auth.from_tailnet(request.remote_addr),
+            'theme': theme,
             'version': VERSION,
         })
 
@@ -300,6 +305,7 @@ def create_app():
             'salt_brands': {k: {'label': v[0], 'grams_per_tsp': v[1]}
                             for k, v in db.SALT_BRANDS.items()},
             'has_key': bool(config.openrouter_key()),
+            'themes': {k: {'label': v[0], 'pitch': v[1]} for k, v in themes.THEMES.items()},
         })
 
     @app.post('/api/settings')
@@ -327,6 +333,8 @@ def create_app():
                 return jsonify({'error': f'unknown salt brand: {value}'}), 400
             if key == 'acid_policy' and value not in ('none', 'background', 'free'):
                 return jsonify({'error': f'unknown acid policy: {value}'}), 400
+            if key == 'theme' and value not in themes.THEMES:
+                return jsonify({'error': f'unknown theme: {value}'}), 400
             db.set_setting(key, value)
         return jsonify({'settings': db.settings()})
 
@@ -355,7 +363,16 @@ def create_app():
         if not index_file.is_file():
             return ('Frontend not built. Run: npm --prefix frontend install && '
                     'npm --prefix frontend run build', 503)
-        return send_from_directory(config.FRONTEND_DIST, 'index.html')
+        # The colour scheme is stamped onto <html> here, so the first paint is
+        # already in it -- set from the client after /api/health, the page would
+        # flash the default first. The key comes from the themes whitelist, never
+        # from the request.
+        theme = themes.current(db.setting('theme'))
+        html = index_file.read_text(encoding='utf-8').replace(
+            '<html lang="en">', f'<html lang="en" data-theme="{theme}">', 1)
+        response = app.response_class(html, mimetype='text/html')
+        response.headers['Cache-Control'] = 'no-cache'
+        return response
 
     return app
 

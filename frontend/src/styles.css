@@ -7,6 +7,36 @@
  */
 
 :root {
+  --radius: 14px;
+  --tabs-h: 58px;
+}
+
+/* Colour schemes. The key list (and the labels Settings shows) is
+ * spice/themes.py; the colours live only here. <html data-theme> picks one, set
+ * from the `theme` setting before first paint (index.html). Olive is also :root
+ * so a page with no attribute yet still draws the default. Wood and caps are the
+ * physical rack: they shift only enough to sit on each ground. */
+:root,
+[data-theme="olive"] {
+  --bg: #13130e;
+  --surface: #1b1c15;
+  --surface-2: #25261c;
+  --line: #36372a;
+  --text: #efeadb;
+  --muted: #a29f8a;
+  --accent: #b5c24a;
+  --accent-dim: #4a5220;
+  --on-accent: #141605;
+  --hot: #d9512e;
+  --hot-dim: #622a18;
+  --good: #7fb85a;
+  --warn: #e0a63a;
+  --shelf-top: #5a4a37;
+  --shelf-face: #2e261c;
+  --cap: #262619;
+}
+
+[data-theme="ember"] {
   --bg: #16130f;
   --surface: #1f1b16;
   --surface-2: #2a251e;
@@ -15,16 +45,90 @@
   --muted: #a1958a;
   --accent: #e08a2b;
   --accent-dim: #7a4a14;
+  --on-accent: #1a1208;
   --hot: #d94a2b;
+  --hot-dim: #6b2a1a;
   --good: #6f9e4a;
   --warn: #d9a13a;
-  --on-accent: #1a1208;   /* ink on a filled accent or warn chip */
-  --hot-dim: #6b2a1a;
-  --shelf-top: #5d4a35;   /* the plank: lit top edge, shadowed face */
+  --shelf-top: #5d4a35;
   --shelf-face: #322718;
-  --cap: #2b241c;         /* every jar's lid */
-  --radius: 14px;
-  --tabs-h: 58px;
+  --cap: #2b241c;
+}
+
+[data-theme="basil"] {
+  --bg: #0f1411;
+  --surface: #161d18;
+  --surface-2: #1f2821;
+  --line: #2c3830;
+  --text: #ecefe6;
+  --muted: #93a096;
+  --accent: #5fbf6b;
+  --accent-dim: #24502c;
+  --on-accent: #07140a;
+  --hot: #e0583a;
+  --hot-dim: #5e2418;
+  --good: #9bd46a;
+  --warn: #e2b043;
+  --shelf-top: #5a4a37;
+  --shelf-face: #2e261c;
+  --cap: #232a25;
+}
+
+[data-theme="sage"] {
+  --bg: #111714;
+  --surface: #18201c;
+  --surface-2: #212b26;
+  --line: #2f3b35;
+  --text: #eef0ea;
+  --muted: #98a69e;
+  --accent: #e0874a;
+  --accent-dim: #6e3f1f;
+  --on-accent: #1a0f06;
+  --hot: #e5533a;
+  --hot-dim: #612519;
+  --good: #7ec27a;
+  --warn: #e3b04b;
+  --shelf-top: #5a4a37;
+  --shelf-face: #2e261c;
+  --cap: #1f2723;
+}
+
+[data-theme="mint"] {
+  --bg: #0d1615;
+  --surface: #132120;
+  --surface-2: #1b2c2a;
+  --line: #28403c;
+  --text: #eaf3ee;
+  --muted: #8fa9a2;
+  --accent: #4fd1a0;
+  --accent-dim: #165244;
+  --on-accent: #04150f;
+  --hot: #ef5b45;
+  --hot-dim: #5c231b;
+  --good: #8ad26b;
+  --warn: #f0b950;
+  --shelf-top: #5a4a37;
+  --shelf-face: #2e261c;
+  --cap: #1c2826;
+}
+
+[data-theme="saffron"] {
+  --bg: #0f1218;
+  --surface: #161a22;
+  --surface-2: #1f2430;
+  --line: #2d3342;
+  --text: #eceae4;
+  --muted: #9499a6;
+  --accent: #f2b134;
+  --accent-dim: #5e4515;
+  --on-accent: #1a1204;
+  --hot: #e5533d;
+  --hot-dim: #5d2219;
+  --good: #6fbf73;
+  --warn: #e8873a;
+  --shelf-top: #5a4a37;
+  --shelf-face: #2e261c;
+  --cap: #222733;
 }
 
 * { box-sizing: border-box; }
@@ -738,3 +842,13 @@ textarea { resize: vertical; }
                padding: 2px 12px; }
 .bowl-apart { font-size: 11.5px; color: var(--warn); margin: 6px 0 0;
               padding-left: 29px; }
+
+/* ── colour scheme picker ────────────────────────────────────────────────────
+ * Each strip sits inside its own [data-theme] scope, so var(--accent) there is
+ * that theme's accent, not the page's.
+ */
+
+.theme-option { display: flex; align-items: center; gap: 12px; }
+.theme-swatch { display: flex; flex: none; border-radius: 6px; overflow: hidden;
+                border: 1px solid rgba(255, 255, 255, 0.12); }
+.theme-swatch i { width: 12px; height: 28px; display: block; }

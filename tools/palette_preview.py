@@ -1,57 +1,33 @@
-"""Side-by-side colour-scheme candidates, drawn with the app's real stylesheet.
+"""Every colour scheme side by side, drawn with the app's real stylesheet.
 
-Writes .work/palettes.html (gitignored): one mock phone per palette, each made
-of the same class names the app uses, so what you see is what the theme does.
-A palette is only the variable block at the top of frontend/src/styles.css;
-pick one here, then copy its values there (and theme-color in index.html and
-the manifest).
+Writes .work/palettes.html (gitignored): one mock phone per theme, built from
+the class names the app uses. Names come from spice/themes.py, colours from the
+[data-theme] blocks in frontend/src/styles.css -- edit a block there, re-run
+this to compare.
 
     py -3.11 tools/palette_preview.py
 """
 from __future__ import annotations
 
+import re
+import sys
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
 CSS = ROOT / 'frontend' / 'src' / 'styles.css'
 OUT = ROOT / '.work' / 'palettes.html'
 
-# Wood stays wood and the caps stay near-black in every option: they are the
-# physical rack, not the app chrome.
-WOOD = {'shelf-top': '#5a4a37', 'shelf-face': '#2e261c'}
+sys.path.insert(0, str(ROOT))
+from spice import themes  # noqa: E402
 
-PALETTES = [
-    ('A', 'Ember (current)', 'Warm char, orange accent. Today\'s look, for comparison.', {
-        'bg': '#16130f', 'surface': '#1f1b16', 'surface-2': '#2a251e', 'line': '#3a3229',
-        'text': '#f0e9df', 'muted': '#a1958a', 'accent': '#e08a2b', 'accent-dim': '#7a4a14',
-        'on-accent': '#1a1208', 'hot': '#d94a2b', 'hot-dim': '#6b2a1a', 'good': '#6f9e4a',
-        'warn': '#d9a13a', 'shelf-top': '#5d4a35', 'shelf-face': '#322718', 'cap': '#2b241c'}),
-    ('B', 'Basil', 'Green-black ground, fresh basil accent. The straight "green for food" take.', {
-        'bg': '#0f1411', 'surface': '#161d18', 'surface-2': '#1f2821', 'line': '#2c3830',
-        'text': '#ecefe6', 'muted': '#93a096', 'accent': '#5fbf6b', 'accent-dim': '#24502c',
-        'on-accent': '#07140a', 'hot': '#e0583a', 'hot-dim': '#5e2418', 'good': '#9bd46a',
-        'warn': '#e2b043', 'cap': '#232a25', **WOOD}),
-    ('C', 'Olive & Brass', 'Olive-tinted dark, chartreuse-olive accent. Earthier, more pantry than garden.', {
-        'bg': '#13130e', 'surface': '#1b1c15', 'surface-2': '#25261c', 'line': '#36372a',
-        'text': '#efeadb', 'muted': '#a29f8a', 'accent': '#b5c24a', 'accent-dim': '#4a5220',
-        'on-accent': '#141605', 'hot': '#d9512e', 'hot-dim': '#622a18', 'good': '#7fb85a',
-        'warn': '#e0a63a', 'cap': '#262619', **WOOD}),
-    ('D', 'Sage & Copper', 'Green ground, copper accent. Green as the room, spice-orange as the action.', {
-        'bg': '#111714', 'surface': '#18201c', 'surface-2': '#212b26', 'line': '#2f3b35',
-        'text': '#eef0ea', 'muted': '#98a69e', 'accent': '#e0874a', 'accent-dim': '#6e3f1f',
-        'on-accent': '#1a0f06', 'hot': '#e5533a', 'hot-dim': '#612519', 'good': '#7ec27a',
-        'warn': '#e3b04b', 'cap': '#1f2723', **WOOD}),
-    ('E', 'Mint', 'Deep teal-black, bright mint accent. The most modern and the most "app".', {
-        'bg': '#0d1615', 'surface': '#132120', 'surface-2': '#1b2c2a', 'line': '#28403c',
-        'text': '#eaf3ee', 'muted': '#8fa9a2', 'accent': '#4fd1a0', 'accent-dim': '#165244',
-        'on-accent': '#04150f', 'hot': '#ef5b45', 'hot-dim': '#5c231b', 'good': '#8ad26b',
-        'warn': '#f0b950', 'cap': '#1c2826', **WOOD}),
-    ('F', 'Saffron Ink', 'Not green: blue-black ground, saffron accent. Jars pop hardest on cool dark.', {
-        'bg': '#0f1218', 'surface': '#161a22', 'surface-2': '#1f2430', 'line': '#2d3342',
-        'text': '#eceae4', 'muted': '#9499a6', 'accent': '#f2b134', 'accent-dim': '#5e4515',
-        'on-accent': '#1a1204', 'hot': '#e5533d', 'hot-dim': '#5d2219', 'good': '#6fbf73',
-        'warn': '#e8873a', 'cap': '#222733', **WOOD}),
-]
+def palettes(css: str) -> list[tuple[str, str, str, dict[str, str]]]:
+    """(key, label, pitch, variables) for every theme, colours read from the CSS."""
+    out = []
+    for key, (label, pitch) in themes.THEMES.items():
+        block = re.search(r'\[data-theme="%s"\]\s*\{([^}]*)\}' % key, css).group(1)
+        out.append((key, label, pitch, dict(re.findall(r'--([\w-]+):\s*(#[0-9a-fA-F]{6})', block))))
+    return out
+
 
 # A slice of the real rack: three jars lit (one an olive herb, the hardest case
 # for a green accent), the rest dimmed, one low.
@@ -115,8 +91,7 @@ def rack(key: str) -> str:
     return ''.join(out) + '</svg>'
 
 
-def phone(letter: str, name: str, pitch: str, v: dict[str, str]) -> str:
-    style = ';'.join(f'--{k}:{val}' for k, val in v.items())
+def phone(key: str, name: str, pitch: str, v: dict[str, str]) -> str:
     checks = [('text on bg', v['text'], v['bg']), ('muted on card', v['muted'], v['surface']),
               ('accent on card', v['accent'], v['surface']), ('ink on accent', v['on-accent'], v['accent'])]
     ratios = ' · '.join(f'{label} <b>{contrast(a, b):.1f}</b>' for label, a, b in checks)
@@ -125,9 +100,9 @@ def phone(letter: str, name: str, pitch: str, v: dict[str, str]) -> str:
                                  'accent', 'accent-dim', 'good', 'warn', 'hot'))
     return f'''
 <section class="option">
-  <header><h2>{letter}. {name}</h2><p>{pitch}</p><div class="sw">{swatches}</div>
+  <header><h2>{name}{' (default)' if key == themes.DEFAULT else ''}</h2><p>{pitch}</p><div class="sw">{swatches}</div>
   <p class="ratios">{ratios}</p></header>
-  <div class="phone" style="{style}">
+  <div class="phone" data-theme="{key}">
     <div class="pad">
       <div class="recipe-head">
         <div class="recipe-chips">
@@ -138,7 +113,7 @@ def phone(letter: str, name: str, pitch: str, v: dict[str, str]) -> str:
         <h2>Crisp-skin pork belly</h2>
         <p class="why">Dry the skin overnight; the rub goes on the meat side only.</p>
       </div>
-      <div class="panel panel-rack"><div class="rack-label">Left rack · row 2</div>{rack(letter)}</div>
+      <div class="panel panel-rack"><div class="rack-label">Left rack · row 2</div>{rack(key)}</div>
       <div class="panel salt-panel"><h3>Salt</h3>
         <div class="salt-big">2 ¾ tsp</div>
         <p class="salt-msg">Rub it into the meat side, then rest it uncovered.</p>
@@ -191,7 +166,7 @@ body::before {{ display: none; }}
 .intro b {{ color: #fff; }}
 </style></head><body>
 <div class="intro"><h1 style="margin:0 0 6px">Spice palettes</h1>
-Each phone is the real stylesheet with a different variable block. Wood shelf and jar
+Each phone is the real stylesheet under a different <code>data-theme</code>. Wood shelf and jar
 contents never change. Ratios: WCAG contrast, <b>4.5+</b> is comfortable for body text.</div>
 <div class="grid">{phones}</div></body></html>'''
 
@@ -199,7 +174,7 @@ contents never change. Ratios: WCAG contrast, <b>4.5+</b> is comfortable for bod
 def main() -> None:
     css = CSS.read_text(encoding='utf-8')
     OUT.parent.mkdir(exist_ok=True)
-    OUT.write_text(PAGE.format(css=css, phones=''.join(phone(*p) for p in PALETTES)),
+    OUT.write_text(PAGE.format(css=css, phones=''.join(phone(*p) for p in palettes(css))),
                    encoding='utf-8')
     print(OUT)
 

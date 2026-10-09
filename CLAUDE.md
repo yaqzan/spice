@@ -73,6 +73,7 @@ SQLite -> `api.py` -> SVG rack + recipe card.
 | `auth.py` | Tailnet check, daily spend cap |
 | `recipes.py` | Request pipeline, rack view, re-shelve |
 | `vault.py` | Rating reminder line |
+| `themes.py` | Colour scheme names (colours are in `styles.css`) |
 
 ## Detail
 
@@ -80,4 +81,5 @@ SQLite -> `api.py` -> SVG rack + recipe card.
 - [prompt.md](.claude/docs/prompt.md): every prompt rule and its evidence
 - [audit.md](.claude/docs/audit.md): review of the chat project this replaced
 - [vault.md](.claude/docs/vault.md): the Obsidian rating reminder
+- [theme.md](.claude/docs/theme.md): colour schemes, the theme setting, the preview tool
 - [ops/README.md](ops/README.md): hosting, what's public, tunnel, tailnet-only variant

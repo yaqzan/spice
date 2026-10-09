@@ -1,5 +1,6 @@
 import { createContext, useContext, useEffect, useState } from 'react'
 import { api } from './api'
+import { applyTheme } from './theme'
 
 // Whether this browser is talking to the app from the owner's tailnet.
 //
@@ -24,7 +25,10 @@ export function AccessProvider({ children }: { children: React.ReactNode }) {
     // /api/health is public and answers `authed` either way, so this is one
     // request rather than a probe followed by a real call.
     api.health()
-      .then((h) => setState({ ready: true, authed: !!h.authed }))
+      .then((h) => {
+        applyTheme(h.theme)
+        setState({ ready: true, authed: !!h.authed })
+      })
       // A server we cannot reach is not someone else's server. Let the pages
       // render and show their own errors.
       .catch(() => setState({ ready: true, authed: false }))

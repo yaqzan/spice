@@ -1796,3 +1796,42 @@ def test_an_old_sauces_layout_is_moved_to_the_fridge_once():
     assert not any(p['rack'] == 'sauces' for p in layout.values())
     slots = [(p['rack'], p['row'], p['col']) for p in layout.values()]
     assert len(slots) == len(set(slots)), 'two jars landed in one slot'
+
+
+# ── colour scheme ────────────────────────────────────────────────────────────
+
+def test_every_theme_has_colours_in_the_stylesheet():
+    """themes.py names them, styles.css colours them; a key with no block would
+    silently draw the default."""
+    from pathlib import Path
+    from spice import themes
+    css = (Path(__file__).resolve().parent.parent / 'frontend' / 'src' / 'styles.css'
+           ).read_text(encoding='utf-8')
+    for key in themes.THEMES:
+        assert f'[data-theme="{key}"]' in css, key
+    assert themes.DEFAULT in themes.THEMES
+
+
+def test_theme_is_public_but_only_the_owner_changes_it(public):
+    assert public.get('/api/health').get_json()['theme'] == 'olive'
+    assert public.post('/api/settings', json={'theme': 'mint'}).status_code == 401
+
+    owner = public.post('/api/settings', json={'theme': 'mint'}, environ_base=PEER)
+    assert owner.status_code == 200
+    assert public.get('/api/health').get_json()['theme'] == 'mint'
+    assert public.post('/api/settings', json={'theme': 'neon'},
+                       environ_base=PEER).status_code == 400
+
+
+def test_served_page_is_stamped_with_the_theme(public, tmp_path, monkeypatch):
+    """First paint must already be in the chosen scheme, not flash the default."""
+    from spice import config
+    (tmp_path / 'index.html').write_text('<!doctype html><html lang="en"><body></body></html>',
+                                         encoding='utf-8')
+    monkeypatch.setattr(config, 'FRONTEND_DIST', tmp_path)
+    db.set_setting('theme', 'saffron')
+    page = public.get('/recipe/3')
+    assert '<html lang="en" data-theme="saffron">' in page.get_data(as_text=True)
+    # A stale key from a removed theme falls back rather than drawing nothing.
+    db.set_setting('theme', 'retired')
+    assert 'data-theme="olive"' in public.get('/').get_data(as_text=True)

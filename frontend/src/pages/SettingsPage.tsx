@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { api } from '../api'
 import { PrivateNotice, useAccess } from '../access'
+import { applyTheme } from '../theme'
 import type { Health, SettingsResponse } from '../types'
 
 const ACID = [
@@ -31,7 +32,13 @@ export function SettingsPage() {
   }
 
   async function save(patch: Record<string, string>) {
-    const result = await api.saveSettings(patch)
+    // Repaint before the round trip; a refused save repaints back below.
+    if (patch.theme) applyTheme(patch.theme)
+    const result = await api.saveSettings(patch).catch(() => null)
+    if (!result) {
+      applyTheme(data?.settings.theme)
+      return
+    }
     setData((d) => (d ? { ...d, settings: result.settings } : d))
     setSaved(Object.keys(patch)[0])
     setTimeout(() => setSaved(''), 1200)
@@ -92,6 +99,29 @@ export function SettingsPage() {
           you rated 8.5 or above was actually seasoned at. It is bolder than the
           usual 1&ndash;1.5%, on purpose.
         </p>
+      </section>
+
+      <section className="panel">
+        <h3>Colour scheme</h3>
+        {/* Site-wide: everyone who opens the app sees the one picked here. Each
+            swatch strip is drawn by its own [data-theme] scope, so no colour
+            is written down in this file. */}
+        <fieldset className="segmented stacked">
+          {Object.entries(data.themes).map(([key, theme]) => (
+            <button key={key} className={`theme-option${s.theme === key ? ' on' : ''}`}
+                    onClick={() => save({ theme: key })}>
+              <span className="theme-swatch" data-theme={key} aria-hidden>
+                <i style={{ background: 'var(--bg)' }} />
+                <i style={{ background: 'var(--surface-2)' }} />
+                <i style={{ background: 'var(--accent)' }} />
+                <i style={{ background: 'var(--warn)' }} />
+                <i style={{ background: 'var(--hot)' }} />
+              </span>
+              <span>{theme.label}<em>{theme.pitch}</em></span>
+            </button>
+          ))}
+        </fieldset>
+        {saved === 'theme' && <p className="hint">Saved.</p>}
       </section>
 
       <section className="panel">
