@@ -128,6 +128,14 @@ visually glued into one confusing sentence. Fixed in the prompt, not the
 renderer: amounts must sit directly beside the ingredient they measure ("1
 TBsp oil"), never separated by "of the" or similar.
 
+**Rack-shelf sauces go in `blend`, never `from_kitchen`.** The prompt once told
+the model to put "soy sauce" in `from_kitchen`, contradicting the fridge
+inventory. Evidence (2026-10-14, Soy Ginger Chicken Rice): soy, oyster sauce,
+sake and mirin landed in `from_kitchen`, so no jar, no label, no bowl, and the
+step poured four loose amounts into the pan. Now: inventory items (fridge and
+stove shelves included) go in `blend`; sauces added together share a stage, so
+`group_blend()` makes them one bowl.
+
 **A `from_kitchen` prep note is not a step.** The same recipe listed "chicken
 breast, thinly sliced into cutlets" as an ingredient amount, but no step ever
 said to slice it — the cook read the ingredient line as a description, not an

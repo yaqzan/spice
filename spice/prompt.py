@@ -265,10 +265,20 @@ as a visual, so anything you write outside the fields is lost.
   water, oil or stock it goes into goes in `from_kitchen`. Never "1/4 TEAsp in
   1/2 cup hot water": the amount sits beside the jar on a narrow phone row, and
   a sentence there buries both the name and the number.
-* **Use exact inventory names** in `blend.spice`. If you need something that is
-  not on the rack, it goes in `from_kitchen`, not in `blend`. Fresh garlic,
-  onions, yoghurt, soy sauce, oil, rice — put them there explicitly. Do not
-  assume they will be inferred.
+* **Use exact inventory names** in `blend.spice`. Everything in the inventory
+  above goes in `blend` — **including the fridge and stove shelves**: light and
+  dark soy, oyster sauce, mirin, cooking sake, doubanjiang, sesame oil, dashi
+  and the rest. That is what lights the bottle on the rack, numbers it in a
+  bowl and stamps it in the step. Never list one of them in `from_kitchen`
+  (a 2026-10-14 soy-ginger recipe did, so the sauces had no label, no bowl and
+  no place on the rack). Only what is NOT in the inventory goes in
+  `from_kitchen`: fresh garlic, ginger, onions, yoghurt, neutral oil, rice,
+  water. Do not assume they will be inferred.
+* **Sauces measured together are a bowl.** When a step stirs in two or more
+  sauces or liquids from the inventory ("pour in the soy, oyster sauce, sake
+  and mirin"), give them one `stage` so they share a bowl, and the step says
+  "add BOWL 2" — never a run of loose amounts in the pan. Measure the sauce
+  bowl ahead of the heat.
 * **Put a measurement directly next to the ingredient it belongs to** — "1 TBsp
   oil", never "1 TBsp of the oil". The card highlights an amount by folding it
   into the ingredient's chip, but only when the two sit adjacent; a word like
