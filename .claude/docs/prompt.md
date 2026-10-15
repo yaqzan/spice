@@ -134,7 +134,9 @@ inventory. Evidence (2026-10-14, Soy Ginger Chicken Rice): soy, oyster sauce,
 sake and mirin landed in `from_kitchen`, so no jar, no label, no bowl, and the
 step poured four loose amounts into the pan. Now: inventory items (fridge and
 stove shelves included) go in `blend`; sauces added together share a stage, so
-`group_blend()` makes them one bowl.
+`group_blend()` makes them one bowl. Backstop: `schema.normalise()` moves any
+spoon-measured `from_kitchen` row that resolves to a fridge/stove jar into
+`blend` (stage = the jar's default).
 
 **A `from_kitchen` prep note is not a step.** The same recipe listed "chicken
 breast, thinly sliced into cutlets" as an ingredient amount, but no step ever

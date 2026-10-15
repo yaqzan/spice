@@ -853,9 +853,12 @@ def test_ask_renders_a_complete_recipe(client):
     assert response.status_code == 200
     payload = response.get_json()['payload']
 
-    # Three real jars resolved; the fresh ginger did not.
+    # Three real jars resolved; the fresh ginger did not. The gochujang was filed
+    # under from_kitchen by the model, but it has a place on the fridge shelf, so
+    # it comes back as a rack item (2026-10-14: soy and oyster had no label).
     assert [i['spice_key'] for i in payload['blend']] == \
-        ['gochugaru', 'garlic_powder', 'sesame_seeds']
+        ['gochugaru', 'garlic_powder', 'sesame_seeds', 'gochujang']
+    assert not any(k['item'] == 'gochujang' for k in payload['from_kitchen'])
     assert any(k['item'] == 'fresh ginger' for k in payload['from_kitchen'])
     assert any('fresh ginger' in w for w in payload['warnings'])
 

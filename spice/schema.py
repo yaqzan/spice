@@ -472,8 +472,27 @@ def normalise(payload: dict, out_of_stock=None) -> dict:
         warnings.append('The model left out: ' + ', '.join(sorted(gaps)) +
                         '. Try again, or switch to a model that holds a JSON schema.')
 
+    # A model that files a fridge or stove bottle under from_kitchen gets it
+    # back: soy, oyster sauce, mirin have a place on the rack, so they are
+    # labelled, lit and bowled like any other jar. Only measured-by-spoon rows
+    # move; "1 cup" of stock or a bottle's worth stays on the shopping list.
+    blend_in = list(payload.get('blend') or [])
+    kept = []
+    kitchen_in = payload.get('from_kitchen')
+    for row in kitchen_in if isinstance(kitchen_in, list) else []:
+        spice = rack.resolve(str(row.get('item') or '')) if isinstance(row, dict) else None
+        amount = str(row.get('amount') or '') if spice else ''
+        if (spice and (spice.key in rack.FRIDGE_BY_KEY or spice.key in rack.STOVE_BY_KEY)
+                and spoon_value(amount) > 0 and _SPOON_HEAD.match(amount)):
+            blend_in.append({'spice': spice.name, 'amount': amount,
+                             'tsp': spoon_value(amount), 'stage': spice.stage,
+                             'step': 0, 'why': ''})
+        else:
+            kept.append(row)
+    payload['from_kitchen'] = kept
+
     resolved, unplaceable = [], []
-    for item in payload.get('blend') or []:
+    for item in blend_in:
         if not isinstance(item, dict):
             continue
         name = str(item.get('spice') or '').strip()
